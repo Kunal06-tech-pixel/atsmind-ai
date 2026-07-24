@@ -1,66 +1,38 @@
 import fs from "fs/promises";
+import crypto from "crypto";
 import mongoose from "mongoose";
-import { PDFParse } from "pdf-parse";
 
 import Analysis from "../models/Analysis.js";
-import { generateSuggestionsWithGroq } from "../services/groq.service.js";
+import { resumeAnalysisQueue } from "../queues/resumeAnalysis.queue.js";
 import {
-  analyzeResumeLocally,
-  buildFallbackSuggestions,
-} from "../services/localAnalysis.service.js";
+  deleteResumeFile,
+  saveResumeFile,
+} from "../services/storage.service.js";
+import { captureEvent } from "../services/analytics.service.js";
+import { findSimilarEmbeddings } from "../services/vectorStore.service.js";
 
-const addSuggestions = async ({ resumeText, jobDescription, jobTitle, analysis }) => {
-  try {
-    const suggestions = await generateSuggestionsWithGroq({
-      resumeText,
-      jobDescription,
-      jobTitle,
-      analysis,
-    });
+const isPdfBuffer = (buffer) =>
+  buffer.subarray(0, 5).toString("utf8") === "%PDF-";
 
-    return { ...analysis, suggestions, suggestionSource: "groq" };
-  } catch (error) {
-    console.error("Groq suggestions failed; using local fallback:", error.message);
-    return {
-      ...analysis,
-      suggestions: buildFallbackSuggestions(analysis),
-      suggestionSource: "local-fallback",
-    };
-  }
+const validatePdfBuffer = (buffer) => isPdfBuffer(buffer);
+
+const createIdempotencyKey = ({ userId, fileBuffer, jobDescription, jobTitle }) => {
+  const resumeHash = crypto.createHash("sha256").update(fileBuffer).digest("hex");
+  return crypto
+    .createHash("sha256")
+    .update(`${userId}:${resumeHash}:${jobTitle || ""}:${jobDescription || ""}`)
+    .digest("hex");
 };
 
-const runAnalysisPipeline = async ({ resumeText, jobDescription, jobTitle }) => {
-  const localResult = await analyzeResumeLocally({
-    resumeText,
-    jobDescription,
-    jobTitle,
-  });
-  const analysis = await addSuggestions({
-    resumeText,
-    jobDescription,
-    jobTitle,
-    analysis: localResult.analysis,
-  });
-
-  console.log("Local resume analysis completed", {
-    semanticScore: analysis.semanticScore,
-    skillScore: analysis.skillScore,
-    keywordScore: analysis.keywordScore,
-    resumeQualityScore: analysis.resumeQualityScore,
-    atsScore: analysis.atsScore.score,
-    suggestionSource: analysis.suggestionSource,
-  });
-
-  return { ...localResult, analysis };
-};
-
-const serializeAnalysis = (analysis) => {
+export const serializeAnalysis = (analysis) => {
   const doc = typeof analysis.toObject === "function" ? analysis.toObject() : analysis;
   const id = doc._id?.toString?.() || doc.id;
   const atsScore = doc.atsScore || { score: 0, level: "" };
 
   return {
     id,
+    status: doc.status || "complete",
+    errorMessage: doc.errorMessage || "",
     fileName: doc.fileName,
     companyName: doc.companyName,
     jobTitle: doc.jobTitle,
@@ -105,6 +77,8 @@ const serializeAnalysis = (analysis) => {
 };
 
 export const analyzeResume = async (req, res) => {
+  let storedFile = null;
+
   try {
     if (!req.file) {
       return res.status(400).json({
@@ -113,42 +87,85 @@ export const analyzeResume = async (req, res) => {
       });
     }
 
-    const fileBuffer = await fs.readFile(req.file.path);
-    const parser = new PDFParse({ data: fileBuffer });
-    const result = await parser.getText();
-    const resumeText = result.text;
+    const fileBuffer = req.file.buffer || await fs.readFile(req.file.path);
 
-    if (!resumeText?.trim()) {
+    if (!validatePdfBuffer(fileBuffer)) {
       return res.status(400).json({
         success: false,
-        message: "Could not read text from this PDF",
+        message: "File is not a valid PDF",
       });
     }
 
     const companyName = req.body.companyName || "";
     const jobTitle = req.body.jobTitle || "";
     const jobDescription = req.body.jobDescription || "";
-    const { resumeEmbedding, analysis: resultAnalysis } = await runAnalysisPipeline({
-      resumeText,
+
+    const idempotencyKey = createIdempotencyKey({
+      userId: req.userId,
+      fileBuffer,
       jobDescription,
       jobTitle,
+    });
+
+    const existingAnalysis = await Analysis.findOne({
+      user: req.userId,
+      idempotencyKey,
+    });
+
+    if (existingAnalysis) {
+      return res.status(200).json({
+        success: true,
+        analysisId: existingAnalysis._id,
+        status: existingAnalysis.status,
+        analysis: serializeAnalysis(existingAnalysis),
+      });
+    }
+
+    storedFile = await saveResumeFile({
+      userId: req.userId,
+      originalName: req.file.originalname,
+      buffer: fileBuffer,
     });
 
     const analysis = await Analysis.create({
       user: req.userId,
       fileName: req.file.originalname,
+      filePath: storedFile.filePath,
+      storageProvider: storedFile.storageProvider,
+      s3Key: storedFile.s3Key,
       companyName,
       jobTitle,
       jobDescription,
-      aiScore: 0,
-      embeddingModel: "all-MiniLM-L6-v2",
-      embeddingDimensions: resumeEmbedding.length,
-      embedding: resumeEmbedding,
-      ...resultAnalysis,
+      idempotencyKey,
+      status: "pending",
     });
 
-    return res.status(201).json({
+    try {
+      await resumeAnalysisQueue.add(
+        "analyze",
+        { analysisId: analysis._id.toString() },
+        { jobId: idempotencyKey }
+      );
+    } catch (error) {
+      await analysis.updateOne({
+        status: "failed",
+        errorMessage: "Could not enqueue analysis job",
+      });
+      throw error;
+    }
+
+    captureEvent(req.userId, "resume_uploaded", {
+      analysisId: analysis._id.toString(),
+      hasJobDescription: Boolean(jobDescription),
+      storageProvider: analysis.storageProvider,
+    });
+
+    storedFile = null;
+
+    return res.status(202).json({
       success: true,
+      analysisId: analysis._id,
+      status: analysis.status,
       analysis: serializeAnalysis(analysis),
     });
   } catch (error) {
@@ -158,6 +175,14 @@ export const analyzeResume = async (req, res) => {
       message: "Resume analysis failed",
     });
   } finally {
+    if (storedFile?.filePath) {
+      await fs.unlink(storedFile.filePath).catch(() => {});
+    }
+
+    if (storedFile?.storageProvider === "s3") {
+      await deleteResumeFile(storedFile).catch(() => {});
+    }
+
     if (req.file?.path) {
       await fs.unlink(req.file.path).catch(() => {});
     }
@@ -219,6 +244,147 @@ export const getAnalysisById = async (req, res) => {
   }
 };
 
+export const getAnalysisStatus = async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({
+        success: false,
+        message: "Analysis not found",
+      });
+    }
+
+    const analysis = await Analysis.findOne({
+      _id: req.params.id,
+      user: req.userId,
+    }).lean();
+
+    if (!analysis) {
+      return res.status(404).json({
+        success: false,
+        message: "Analysis not found",
+      });
+    }
+
+    return res.json({
+      success: true,
+      analysisId: analysis._id,
+      status: analysis.status || "complete",
+      analysis: analysis.status === "complete" ? serializeAnalysis(analysis) : null,
+      errorMessage: analysis.errorMessage || "",
+    });
+  } catch (error) {
+    console.error("Get analysis status error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Could not load analysis status",
+    });
+  }
+};
+
+export const getSimilarAnalyses = async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({
+        success: false,
+        message: "Analysis not found",
+      });
+    }
+
+    const analysis = await Analysis.findOne({
+      _id: req.params.id,
+      user: req.userId,
+      status: "complete",
+    }).lean();
+
+    if (!analysis) {
+      return res.status(404).json({
+        success: false,
+        message: "Analysis not found",
+      });
+    }
+
+    const matches = await findSimilarEmbeddings({
+      userId: req.userId,
+      embedding: analysis.embedding,
+      limit: Math.min(Number(req.query.limit || 10), 25),
+    });
+
+    return res.json({
+      success: true,
+      matches,
+    });
+  } catch (error) {
+    console.error("Get similar analyses error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Could not load similar analyses",
+    });
+  }
+};
+
+export const recordSuggestionFeedback = async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({
+        success: false,
+        message: "Analysis not found",
+      });
+    }
+
+    const suggestionIndex = Number(req.params.suggestionIndex);
+    const { helpful } = req.body;
+
+    if (!Number.isInteger(suggestionIndex) || typeof helpful !== "boolean") {
+      return res.status(400).json({
+        success: false,
+        message: "suggestionIndex and helpful boolean are required",
+      });
+    }
+
+    const analysis = await Analysis.findOne({
+      _id: req.params.id,
+      user: req.userId,
+    });
+
+    if (!analysis) {
+      return res.status(404).json({
+        success: false,
+        message: "Analysis not found",
+      });
+    }
+
+    if (suggestionIndex >= analysis.suggestions.length) {
+      return res.status(400).json({
+        success: false,
+        message: "Suggestion index is out of range",
+      });
+    }
+
+    analysis.suggestionFeedback.push({
+      suggestionIndex,
+      helpful,
+      suggestionSource: analysis.suggestionSource,
+      promptVersion: "resume-suggestions-v1",
+    });
+    await analysis.save();
+
+    captureEvent(req.userId, "suggestion_feedback", {
+      analysisId: analysis._id.toString(),
+      suggestionIndex,
+      helpful,
+      suggestionSource: analysis.suggestionSource,
+    });
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("Suggestion feedback error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Could not save suggestion feedback",
+    });
+  }
+};
+
 export const analyzeResumeText = async (req, res) => {
   try {
     const { resumeText, jobDescription = "", jobTitle = "" } = req.body;
@@ -230,6 +396,9 @@ export const analyzeResumeText = async (req, res) => {
       });
     }
 
+    const { runAnalysisPipeline } = await import(
+      "../services/resumeAnalysisPipeline.service.js"
+    );
     const { resumeEmbedding, analysis } = await runAnalysisPipeline({
       resumeText,
       jobDescription,

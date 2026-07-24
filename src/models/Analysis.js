@@ -45,6 +45,35 @@ const skillMatchSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const suggestionFeedbackSchema = new mongoose.Schema(
+  {
+    suggestionIndex: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    helpful: {
+      type: Boolean,
+      required: true,
+    },
+    suggestionSource: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    promptVersion: {
+      type: String,
+      default: "resume-suggestions-v1",
+      trim: true,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: false }
+);
+
 const analysisSchema = new mongoose.Schema(
   {
     user: {
@@ -54,9 +83,45 @@ const analysisSchema = new mongoose.Schema(
       index: true,
     },
 
+    status: {
+      type: String,
+      enum: ["pending", "processing", "complete", "failed"],
+      default: "complete",
+      index: true,
+    },
+
+    idempotencyKey: {
+      type: String,
+      trim: true,
+    },
+
+    errorMessage: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
     fileName: {
       type: String,
       required: true,
+      trim: true,
+    },
+
+    filePath: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    storageProvider: {
+      type: String,
+      enum: ["local", "s3"],
+      default: "local",
+    },
+
+    s3Key: {
+      type: String,
+      default: "",
       trim: true,
     },
 
@@ -135,6 +200,11 @@ const analysisSchema = new mongoose.Schema(
       type: String,
       default: "",
       trim: true,
+    },
+
+    suggestionFeedback: {
+      type: [suggestionFeedbackSchema],
+      default: [],
     },
 
     atsScore: {
@@ -223,6 +293,16 @@ analysisSchema.index({
   user: 1,
   createdAt: -1,
 });
+
+analysisSchema.index(
+  { user: 1, idempotencyKey: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      idempotencyKey: { $exists: true, $type: "string" },
+    },
+  }
+);
 
 const Analysis = mongoose.model(
   "Analysis",

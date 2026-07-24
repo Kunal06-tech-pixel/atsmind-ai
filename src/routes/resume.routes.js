@@ -1,30 +1,22 @@
 import express from "express";
-import fs from "fs";
 import path from "path";
 import multer from "multer";
 import {
   analyzeResume,
   analyzeResumeText,
+  getAnalysisStatus,
+  getSimilarAnalyses,
   getAnalysisById,
   listAnalyses,
+  recordSuggestionFeedback,
 } from "../controllers/resume.controller.js";
 import protect from "../middleware/auth.middleware.js";
+import { requireCsrf } from "../middleware/csrf.middleware.js";
+import { enforceAnalysisQuota } from "../middleware/quota.middleware.js";
+import { resumeUploadRateLimit } from "../middleware/rateLimit.middleware.js";
 
 const router = express.Router();
-const uploadDir = path.resolve("uploads");
-
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage,
@@ -59,8 +51,26 @@ const uploadResume = (req, res, next) => {
 router.use(protect);
 
 router.get("/analyses", listAnalyses);
+router.get("/analyses/:id/status", getAnalysisStatus);
+router.get("/analyses/:id/similar", getSimilarAnalyses);
 router.get("/analyses/:id", getAnalysisById);
-router.post("/upload", uploadResume, analyzeResume);
-router.post("/analyze-text", analyzeResumeText);
+router.post(
+  "/analyses/:id/suggestions/:suggestionIndex/feedback",
+  requireCsrf,
+  recordSuggestionFeedback
+);
+router.post(
+  "/upload",
+  resumeUploadRateLimit,
+  enforceAnalysisQuota,
+  uploadResume,
+  analyzeResume
+);
+router.post(
+  "/analyze-text",
+  resumeUploadRateLimit,
+  enforceAnalysisQuota,
+  analyzeResumeText
+);
 
 export default router;

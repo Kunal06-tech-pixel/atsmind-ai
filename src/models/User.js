@@ -19,6 +19,19 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+
+    plan: {
+      type: String,
+      enum: ["free", "pro", "team"],
+      default: "free",
+    },
+
+    stripeCustomerId: {
+      type: String,
+      default: "",
+      trim: true,
+      index: true,
+    },
   },
   { timestamps: true }
 );
