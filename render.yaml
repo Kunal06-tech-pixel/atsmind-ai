@@ -1,0 +1,64 @@
+services:
+  - type: web
+    name: resume-analyzer-api
+    env: node
+    region: singapore
+    plan: starter
+    buildCommand: cd backend && npm ci
+    startCommand: cd backend && node src/server.js
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: PORT
+        value: 5000
+      - key: FRONTEND_ORIGIN
+        value: https://resume-analyzer.vercel.app
+      - key: MONGO_URI
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: POSTGRES_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GROQ_API_KEY
+        sync: false
+      - key: AWS_REGION
+        value: us-east-1
+      - key: RESUME_UPLOADS_BUCKET
+        sync: false
+      - key: S3_SERVER_SIDE_ENCRYPTION
+        value: AES256
+      - key: ADZUNA_APP_ID
+        sync: false
+      - key: ADZUNA_APP_KEY
+        sync: false
+      - key: ADZUNA_DEFAULT_COUNTRY
+        value: in
+      - key: ADZUNA_RESULTS_PER_PAGE
+        value: 20
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRO_PRICE_ID
+        sync: false
+      - key: STRIPE_TEAM_PRICE_ID
+        sync: false
+      - key: POSTHOG_API_KEY
+        sync: false
+      - key: POSTHOG_HOST
+        value: https://app.posthog.com
+      - key: LOG_LEVEL
+        value: info
+      - key: RESUME_ANALYSIS_CONCURRENCY
+        value: 2
+      - key: RESUME_FILE_RETENTION_DAYS
+        value: 90
+      - key: AI_PROVIDER_TIMEOUT_MS
+        value: 8000
+      - key: SENTRY_DSN
+        sync: false
+      - key: SENTRY_TRACES_SAMPLE_RATE
+        value: "0.1"
