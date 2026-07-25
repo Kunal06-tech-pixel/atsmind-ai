@@ -3,7 +3,7 @@ services:
     name: resume-analyzer-api
     env: node
     region: singapore
-    plan: starter
+    plan: free
     buildCommand: cd backend && npm ci
     startCommand: cd backend && node src/server.js
     healthCheckPath: /healthz
@@ -24,12 +24,6 @@ services:
         generateValue: true
       - key: GROQ_API_KEY
         sync: false
-      - key: AWS_REGION
-        value: us-east-1
-      - key: RESUME_UPLOADS_BUCKET
-        sync: false
-      - key: S3_SERVER_SIDE_ENCRYPTION
-        value: AES256
       - key: STRIPE_SECRET_KEY
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
@@ -45,7 +39,9 @@ services:
       - key: LOG_LEVEL
         value: info
       - key: RESUME_ANALYSIS_CONCURRENCY
-        value: 2
+        value: 1
+      - key: RUN_WORKERS_IN_API
+        value: true
       - key: RESUME_FILE_RETENTION_DAYS
         value: 90
       - key: CANDIDATE_BATCH_MAX_FILES

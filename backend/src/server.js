@@ -16,9 +16,10 @@ import resumeRoutes from "./routes/resume.routes.js";
 import aiRoutes from "./routes/ai.routes.js";
 import recruiterRoutes from "./routes/recruiter.routes.js";
 import { connection as redisConnection } from "./queues/resumeAnalysis.queue.js";
+import { startWorkers, stopWorkers } from "./workers/startWorkers.js";
 import { logger } from "./utils/logger.js";
 import { handleStripeWebhook } from "./controllers/stripeWebhook.controller.js";
-import chatRoutes from "./routes/chat.routes.js"; // ✅ NEW
+import chatRoutes from "./routes/chat.routes.js";
 
 const app = express();
 
@@ -26,10 +27,12 @@ const app = express();
 connectDB();
 
 /* MIDDLEWARE */
-app.use(cors({
-  origin: process.env.FRONTEND_ORIGIN || "http://localhost:5173",
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: process.env.FRONTEND_ORIGIN || "http://localhost:5173",
+    credentials: true,
+  })
+);
 
 app.post(
   "/api/webhooks/stripe",
@@ -46,7 +49,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/resume", resumeRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/recruiter", recruiterRoutes);
-app.use("/api/chat", chatRoutes); // ✅ NEW CHAT ROUTE
+app.use("/api/chat", chatRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running...");
@@ -70,5 +73,23 @@ app.get("/readyz", async (req, res) => {
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
+
+if (process.env.RUN_WORKERS_IN_API !== "false") {
+  startWorkers().catch((error) => {
+    logger.error({ error: error.message }, "Could not start background workers");
+    process.exit(1);
+  });
+}
+
+const shutdown = async () => {
+  await stopWorkers().catch((error) => {
+    logger.error({ error: error.message }, "Worker shutdown failed");
+  });
+  await redisConnection.quit();
+  process.exit(0);
+};
+
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);
