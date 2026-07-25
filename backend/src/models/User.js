@@ -26,6 +26,38 @@ const userSchema = new mongoose.Schema(
       default: "free",
     },
 
+    role: {
+      type: String,
+      enum: ["job_seeker", "recruiter", "admin"],
+      default: "job_seeker",
+      required: true,
+      index: true,
+    },
+
+    companyProfile: {
+      companyName: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      designation: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      companyWebsite: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+    },
+
+    recruiterVerified: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+
     stripeCustomerId: {
       type: String,
       default: "",

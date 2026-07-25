@@ -1,13 +1,7 @@
 import { generateEmbedding, generateEmbeddings } from "../utils/embedding.js";
 import { cosineSimilarity } from "../utils/cosineSimilarity.js";
 import { matchSkillsWithEmbeddings } from "../utils/skillMatcher.js";
-
-const SCORE_WEIGHTS = {
-  skills: 0.45,
-  semantic: 0.3,
-  keywords: 0.15,
-  quality: 0.1,
-};
+import { calculateFinalAtsScore, SCORE_WEIGHTS } from "../utils/atsScoring.js";
 
 const STOP_WORDS = new Set([
   "about", "after", "also", "and", "are", "been", "being", "but", "can",
@@ -225,14 +219,13 @@ export const analyzeResumeLocally = async ({
   );
   const qualityAnalysis = analyzeResumeQuality(resumeText);
 
-  const finalScore = hasJobDescription
-    ? clampScore(
-        skillAnalysis.skillScore * SCORE_WEIGHTS.skills +
-          semanticScore * SCORE_WEIGHTS.semantic +
-          keywordAnalysis.keywordScore * SCORE_WEIGHTS.keywords +
-          qualityAnalysis.score * SCORE_WEIGHTS.quality
-      )
-    : qualityAnalysis.score;
+  const finalScore = calculateFinalAtsScore({
+    hasJobDescription,
+    skillScore: skillAnalysis.skillScore,
+    semanticScore,
+    keywordScore: keywordAnalysis.keywordScore,
+    resumeQualityScore: qualityAnalysis.score,
+  });
   const narrative = buildNarrative({
     jobTitle,
     semanticScore,

@@ -6,10 +6,12 @@ import {
   deleteChat,
 } from "../controllers/chat.controller.js";
 import protect from "../middleware/auth.middleware.js";
+import { authorizeRoles } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
 router.use(protect);
+router.use(authorizeRoles("job_seeker", "admin"));
 
 // Get or create chat for an analysis
 router.get("/:analysisId", getOrCreateChat);

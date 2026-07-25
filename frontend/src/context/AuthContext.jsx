@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
     api
       .get("/api/user/profile")
       .then((res) => {
-        setUser(res.data);
+        setUser(res.data.user || res.data);
       })
       .catch(() => {
         setUser(null);

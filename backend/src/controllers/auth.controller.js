@@ -30,6 +30,10 @@ const clearCookieOptions = {
   sameSite: isProduction ? "none" : "strict",
 };
 
+const USER_ROLES = new Set(["job_seeker", "recruiter", "admin"]);
+
+const cleanString = (value) => String(value || "").trim();
+
 const generateToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: ACCESS_TOKEN_TTL,
@@ -39,10 +43,13 @@ const hashToken = (token) =>
   crypto.createHash("sha256").update(token).digest("hex");
 
 const serializeUser = (user) => ({
-  id: user._id,
+  id: user._id?.toString?.() || user.id,
   name: user.name,
   email: user.email,
+  role: user.role || "job_seeker",
   plan: user.plan || "free",
+  companyProfile: user.companyProfile || {},
+  recruiterVerified: Boolean(user.recruiterVerified),
 });
 
 const issueTokens = async (res, user) => {
@@ -65,10 +72,20 @@ const issueTokens = async (res, user) => {
 
 export const signup = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const {
+      name,
+      email,
+      password,
+      role = "job_seeker",
+      companyProfile = {},
+    } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
+    }
+
+    if (!USER_ROLES.has(role) || role === "admin") {
+      return res.status(400).json({ message: "Invalid account role" });
     }
 
     const userExists = await User.findOne({ email });
@@ -79,9 +96,18 @@ export const signup = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     const user = await User.create({
-      name,
-      email,
+      name: cleanString(name),
+      email: cleanString(email),
       password: hashedPassword,
+      role,
+      companyProfile:
+        role === "recruiter"
+          ? {
+              companyName: cleanString(companyProfile.companyName),
+              designation: cleanString(companyProfile.designation),
+              companyWebsite: cleanString(companyProfile.companyWebsite),
+            }
+          : undefined,
     });
     const accessToken = await issueTokens(res, user);
 
@@ -174,4 +200,3 @@ export const logout = async (req, res) => {
 
   return res.status(200).json({ message: "Logged out successfully" });
 };
-

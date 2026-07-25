@@ -1,31 +1,64 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
+  BarChart3,
   Briefcase,
+  CheckSquare,
+  ClipboardList,
+  FileStack,
   FileText,
   LayoutDashboard,
   LogOut,
   Menu,
   Search,
+  ShieldCheck,
   Sparkles,
+  UploadCloud,
+  UserRound,
   X,
 } from "lucide-react";
 import { useAuth } from "../../context/useAuth";
+import { getUserRole, USER_ROLES } from "../../utils/roles";
 
-const navItems = [
+const seekerNavItems = [
   { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
-  { label: "Analyzer", to: "/analyzer", icon: Search },
-  { label: "Jobs", to: "/jobs", icon: Briefcase },
-  { label: "Builder", to: "/builder", icon: FileText },
+  { label: "Job Fit Analysis", to: "/analyzer", icon: Search },
+  { label: "Resume Builder", to: "/builder", icon: FileText },
+  { label: "Profile", to: "/profile", icon: UserRound },
 ];
 
-const NavList = ({ onNavigate }) => {
+const recruiterNavItems = [
+  { label: "Dashboard", to: "/recruiter/dashboard", icon: LayoutDashboard },
+  { label: "Job Requirements", to: "/recruiter/jobs", icon: Briefcase },
+  { label: "Create Job", to: "/recruiter/jobs/new", icon: ClipboardList },
+  { label: "Candidate Uploads", to: "/recruiter/candidates", icon: UploadCloud },
+  { label: "Candidate Rankings", to: "/recruiter/rankings", icon: BarChart3 },
+  { label: "Candidate Comparison", to: "/recruiter/comparison", icon: FileStack },
+  { label: "Shortlists", to: "/recruiter/shortlists", icon: CheckSquare },
+  { label: "Reports", to: "/recruiter/reports", icon: FileText },
+  { label: "Profile", to: "/recruiter/profile", icon: UserRound },
+];
+
+const adminNavItems = [
+  { label: "Dashboard", to: "/admin/dashboard", icon: ShieldCheck },
+];
+
+const getNavItems = (user) => {
+  const role = getUserRole(user);
+
+  if (role === USER_ROLES.recruiter) return recruiterNavItems;
+  if (role === USER_ROLES.admin) return adminNavItems;
+
+  return seekerNavItems;
+};
+
+const NavList = ({ items, onNavigate }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
   return (
     <div className="space-y-1">
-      {navItems.map((item) => {
+      {items.map((item) => {
         const Icon = item.icon;
         const active = location.pathname === item.to;
 
@@ -88,6 +121,13 @@ const AppShell = ({ title, description, actions, children }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
+  const navItems = getNavItems(user);
+  const workspaceLabel =
+    getUserRole(user) === USER_ROLES.recruiter
+      ? "Recruit workspace"
+      : getUserRole(user) === USER_ROLES.admin
+        ? "Admin workspace"
+        : "Career workspace";
 
   const handleLogout = async () => {
     await logout();
@@ -113,15 +153,15 @@ const AppShell = ({ title, description, actions, children }) => {
           </span>
         </button>
 
-        <NavList />
+        <NavList items={navItems} />
 
         <div className="absolute bottom-5 left-4 right-4">
           <div className="liquid-pill mb-3 rounded-2xl p-3">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-blue-700">
-              ATS Suite
+              {workspaceLabel}
             </p>
             <p className="mt-1 text-sm leading-5 text-blue-950">
-              Analyze, improve, and export a job-ready resume.
+              Evidence-based resume and recruitment evaluation.
             </p>
           </div>
           <UserBlock user={user} onLogout={handleLogout} />
@@ -157,7 +197,7 @@ const AppShell = ({ title, description, actions, children }) => {
                 <X size={18} />
               </button>
             </div>
-            <NavList onNavigate={() => setOpen(false)} />
+            <NavList items={navItems} onNavigate={() => setOpen(false)} />
             <div className="mt-auto">
               <UserBlock user={user} onLogout={handleLogout} />
             </div>

@@ -14,7 +14,7 @@ import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import resumeRoutes from "./routes/resume.routes.js";
 import aiRoutes from "./routes/ai.routes.js";
-import jobsRoutes from "./routes/jobs.routes.js";
+import recruiterRoutes from "./routes/recruiter.routes.js";
 import { connection as redisConnection } from "./queues/resumeAnalysis.queue.js";
 import { logger } from "./utils/logger.js";
 import { handleStripeWebhook } from "./controllers/stripeWebhook.controller.js";
@@ -45,7 +45,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/resume", resumeRoutes);
 app.use("/api/ai", aiRoutes);
-app.use("/api/jobs", jobsRoutes);
+app.use("/api/recruiter", recruiterRoutes);
 app.use("/api/chat", chatRoutes); // ✅ NEW CHAT ROUTE
 
 app.get("/", (req, res) => {

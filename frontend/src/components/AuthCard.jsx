@@ -5,7 +5,14 @@ import { useLocation } from "react-router-dom";
 import { PrimaryButton } from "./ui/Buttons";
 import { inputClass, labelClass } from "../utils/uiClasses";
 import { useToast } from "./ui/useToast";
-import { AlertCircle, ArrowRight, Mail, Shield } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowRight,
+  Briefcase,
+  Mail,
+  Shield,
+  UserRound,
+} from "lucide-react";
 
 const AuthCard = () => {
   const location = useLocation();
@@ -20,6 +27,10 @@ const AuthCard = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    role: "job_seeker",
+    companyName: "",
+    designation: "",
+    companyWebsite: "",
   });
 
   useEffect(() => {
@@ -52,20 +63,20 @@ const AuthCard = () => {
           throw new Error("Passwords do not match");
         }
 
-        await api.post("/api/auth/signup", {
+        const res = await api.post("/api/auth/signup", {
           name: form.name,
           email: form.email,
           password: form.password,
+          role: form.role,
+          companyProfile: {
+            companyName: form.companyName,
+            designation: form.designation,
+            companyWebsite: form.companyWebsite,
+          },
         });
 
-        toast.success("Your account is ready. Log in to continue.");
-        setIsLogin(true);
-        setForm({
-          name: "",
-          email: "",
-          password: "",
-          confirmPassword: "",
-        });
+        toast.success("Your account is ready.");
+        setUser(res.data.user);
       }
     } catch (err) {
       const message = err.response?.data?.message || err.message;
@@ -114,6 +125,94 @@ const AuthCard = () => {
               onChange={handleChange}
               value={form.name}
             />
+          </div>
+        )}
+
+        {!isLogin && (
+          <div>
+            <label className={labelClass}>How do you want to use ATSmind?</label>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {[
+                {
+                  value: "job_seeker",
+                  title: "Job Seeker",
+                  description: "Analyse, improve and build my resume.",
+                  icon: UserRound,
+                },
+                {
+                  value: "recruiter",
+                  title: "Recruiter",
+                  description: "Evaluate and compare candidate resumes.",
+                  icon: Briefcase,
+                },
+              ].map((option) => {
+                const Icon = option.icon;
+                const active = form.role === option.value;
+
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setForm({ ...form, role: option.value })}
+                    className={`rounded-2xl border p-3 text-left transition ${
+                      active
+                        ? "border-teal-300 bg-teal-50/70 text-slate-950"
+                        : "border-white/70 bg-white/35 text-slate-600 hover:bg-white/55"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon size={17} />
+                      <span className="text-sm font-semibold">
+                        {option.title}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-xs leading-5 text-slate-500">
+                      {option.description}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {!isLogin && form.role === "recruiter" && (
+          <div className="grid gap-4">
+            <div>
+              <label className={labelClass}>Company Name</label>
+              <input
+                name="companyName"
+                type="text"
+                placeholder="Company name"
+                className={inputClass}
+                onChange={handleChange}
+                value={form.companyName}
+              />
+            </div>
+
+            <div>
+              <label className={labelClass}>Designation</label>
+              <input
+                name="designation"
+                type="text"
+                placeholder="Talent partner"
+                className={inputClass}
+                onChange={handleChange}
+                value={form.designation}
+              />
+            </div>
+
+            <div>
+              <label className={labelClass}>Company Website</label>
+              <input
+                name="companyWebsite"
+                type="url"
+                placeholder="https://company.com"
+                className={inputClass}
+                onChange={handleChange}
+                value={form.companyWebsite}
+              />
+            </div>
           </div>
         )}
 

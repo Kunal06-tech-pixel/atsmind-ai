@@ -1,0 +1,235 @@
+openapi: 3.0.3
+info:
+  title: ATSmind API
+  version: 1.0.0
+  description: Dual-role resume and recruiter evaluation API.
+servers:
+  - url: http://localhost:5000
+paths:
+  /api/auth/signup:
+    post:
+      summary: Register a job seeker or recruiter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+                password: { type: string }
+                role:
+                  type: string
+                  enum: [job_seeker, recruiter]
+                companyProfile:
+                  $ref: "#/components/schemas/CompanyProfile"
+      responses:
+        "201":
+          description: Signup successful
+  /api/auth/login:
+    post:
+      summary: Log in and set auth cookies
+      responses:
+        "200":
+          description: Login successful
+  /api/user/profile:
+    get:
+      summary: Restore current authenticated user
+      responses:
+        "200":
+          description: Profile loaded
+  /api/resume/upload:
+    post:
+      summary: Upload one seeker resume PDF for analysis
+      security:
+        - cookieAuth: []
+      responses:
+        "202":
+          description: Analysis queued
+  /api/resume/analyses:
+    get:
+      summary: List seeker analyses
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Analyses loaded
+  /api/recruiter/jobs:
+    get:
+      summary: List recruiter job requirements
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Jobs loaded
+    post:
+      summary: Create recruiter job requirement
+      security:
+        - cookieAuth: []
+        - csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobOpeningInput"
+      responses:
+        "201":
+          description: Job created
+  /api/recruiter/jobs/{jobId}:
+    get:
+      summary: Get recruiter job requirement
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/jobId"
+      responses:
+        "200":
+          description: Job loaded
+    patch:
+      summary: Update recruiter job requirement
+      security:
+        - cookieAuth: []
+        - csrfHeader: []
+      parameters:
+        - $ref: "#/components/parameters/jobId"
+      responses:
+        "200":
+          description: Job updated
+    delete:
+      summary: Delete recruiter job and owned candidate data
+      security:
+        - cookieAuth: []
+        - csrfHeader: []
+      parameters:
+        - $ref: "#/components/parameters/jobId"
+      responses:
+        "200":
+          description: Job deleted
+  /api/recruiter/jobs/{jobId}/candidates:
+    post:
+      summary: Upload multiple candidate resumes
+      security:
+        - cookieAuth: []
+        - csrfHeader: []
+      parameters:
+        - $ref: "#/components/parameters/jobId"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [resumes, consentConfirmed]
+              properties:
+                resumes:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                consentConfirmed:
+                  type: boolean
+      responses:
+        "202":
+          description: Candidate batch queued
+    get:
+      summary: List candidate uploads for a job
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/jobId"
+      responses:
+        "200":
+          description: Candidates loaded
+  /api/recruiter/jobs/{jobId}/progress:
+    get:
+      summary: Get candidate processing progress
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/jobId"
+      responses:
+        "200":
+          description: Progress loaded
+  /api/recruiter/jobs/{jobId}/rankings:
+    get:
+      summary: Get candidate rankings
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/jobId"
+      responses:
+        "200":
+          description: Rankings loaded
+  /api/recruiter/jobs/{jobId}/compare:
+    post:
+      summary: Compare two or three candidate evaluations
+      security:
+        - cookieAuth: []
+        - csrfHeader: []
+      parameters:
+        - $ref: "#/components/parameters/jobId"
+      responses:
+        "200":
+          description: Comparison loaded
+  /api/recruiter/evaluations/{evaluationId}:
+    get:
+      summary: Get candidate evaluation detail
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/evaluationId"
+      responses:
+        "200":
+          description: Evaluation loaded
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: access_token
+    csrfHeader:
+      type: apiKey
+      in: header
+      name: x-csrf-token
+  parameters:
+    jobId:
+      name: jobId
+      in: path
+      required: true
+      schema: { type: string }
+    evaluationId:
+      name: evaluationId
+      in: path
+      required: true
+      schema: { type: string }
+  schemas:
+    CompanyProfile:
+      type: object
+      properties:
+        companyName: { type: string }
+        designation: { type: string }
+        companyWebsite: { type: string }
+    JobOpeningInput:
+      type: object
+      required: [title, jobDescription]
+      properties:
+        title: { type: string }
+        companyName: { type: string }
+        department: { type: string }
+        location: { type: string }
+        jobDescription: { type: string }
+        mandatorySkills:
+          type: array
+          items: { type: string }
+        preferredSkills:
+          type: array
+          items: { type: string }
+        minimumExperience: { type: number }
+        minimumQualification: { type: string }
+        status:
+          type: string
+          enum: [draft, active, closed]
+

@@ -11,6 +11,7 @@ import {
   recordSuggestionFeedback,
 } from "../controllers/resume.controller.js";
 import protect from "../middleware/auth.middleware.js";
+import { authorizeRoles } from "../middleware/auth.middleware.js";
 import { requireCsrf } from "../middleware/csrf.middleware.js";
 import { enforceAnalysisQuota } from "../middleware/quota.middleware.js";
 import { resumeUploadRateLimit } from "../middleware/rateLimit.middleware.js";
@@ -49,6 +50,7 @@ const uploadResume = (req, res, next) => {
 };
 
 router.use(protect);
+router.use(authorizeRoles("job_seeker", "admin"));
 
 router.get("/analyses", listAnalyses);
 router.get("/analyses/:id/status", getAnalysisStatus);

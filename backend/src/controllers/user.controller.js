@@ -13,10 +13,14 @@ export const getProfile = async (req, res) => {
     }
 
     return res.json({
+      id: user._id.toString(),
       userId: user._id,
       email: user.email,
       name: user.name,
+      role: user.role || "job_seeker",
       plan: user.plan || "free",
+      companyProfile: user.companyProfile || {},
+      recruiterVerified: Boolean(user.recruiterVerified),
     });
   } catch (error) {
     console.error("Profile error:", error);

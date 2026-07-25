@@ -1,18 +1,45 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowRight, Briefcase, FileText, LayoutDashboard, Search, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  Briefcase,
+  FileText,
+  LayoutDashboard,
+  Search,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 import { useAuth } from "../context/useAuth";
+import { getUserRole, USER_ROLES } from "../utils/roles";
 
-const navItems = [
+const seekerNavItems = [
   { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
-  { label: "Analyzer", to: "/analyzer", icon: Search },
-  { label: "Jobs", to: "/jobs", icon: Briefcase },
-  { label: "Builder", to: "/builder", icon: FileText },
+  { label: "Job Fit Analysis", to: "/analyzer", icon: Search },
+  { label: "Resume Builder", to: "/builder", icon: FileText },
 ];
+
+const recruiterNavItems = [
+  { label: "Dashboard", to: "/recruiter/dashboard", icon: LayoutDashboard },
+  { label: "Job Requirements", to: "/recruiter/jobs", icon: Briefcase },
+];
+
+const adminNavItems = [
+  { label: "Dashboard", to: "/admin/dashboard", icon: ShieldCheck },
+];
+
+const getNavItems = (user) => {
+  const role = getUserRole(user);
+
+  if (role === USER_ROLES.recruiter) return recruiterNavItems;
+  if (role === USER_ROLES.admin) return adminNavItems;
+
+  return seekerNavItems;
+};
 
 const AppNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const navItems = getNavItems(user);
 
   const goToLogin = () => navigate("/login", { state: { mode: "login" } });
   const goToSignup = () => navigate("/login", { state: { mode: "signup" } });

@@ -26,9 +26,6 @@ build/
 Thumbs.db
 *.log
 
-# Docker
-uploads-data/
-
 # Backend specific
 backend/.env
 

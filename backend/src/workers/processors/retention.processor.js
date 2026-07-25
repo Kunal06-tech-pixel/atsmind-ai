@@ -1,4 +1,5 @@
 import Analysis from "../../models/Analysis.js";
+import CandidateResume from "../../models/CandidateResume.js";
 import { deleteResumeFile } from "../../services/storage.service.js";
 import { logger } from "../../utils/logger.js";
 
@@ -36,11 +37,41 @@ export const enforceResumeRetention = async () => {
     await analysis.updateOne({ filePath: "", s3Key: "" });
   }
 
+  const candidateResumes = await CandidateResume.find({
+    $or: [
+      { filePath: { $exists: true, $ne: "" } },
+      { s3Key: { $exists: true, $ne: "" } },
+    ],
+    createdAt: { $lt: cutoff },
+  })
+    .select("filePath storageProvider s3Key")
+    .limit(500);
+
+  let deletedCandidateFiles = 0;
+
+  for (const candidateResume of candidateResumes) {
+    await deleteResumeFile({
+      storageProvider: candidateResume.storageProvider,
+      s3Key: candidateResume.s3Key,
+      filePath: candidateResume.filePath,
+    }).then(
+      (deleted) => {
+        if (!deleted) return;
+        deletedCandidateFiles += 1;
+      },
+      () => {}
+    );
+
+    await candidateResume.updateOne({ filePath: "", s3Key: "" });
+  }
+
   logger.info(
     {
       retentionDays,
-      scanned: analyses.length,
+      scannedAnalyses: analyses.length,
+      scannedCandidates: candidateResumes.length,
       deletedFiles,
+      deletedCandidateFiles,
     },
     "Resume file retention cleanup completed"
   );
@@ -48,6 +79,8 @@ export const enforceResumeRetention = async () => {
   return {
     retentionDays,
     scanned: analyses.length,
+    scannedCandidates: candidateResumes.length,
     deletedFiles,
+    deletedCandidateFiles,
   };
 };

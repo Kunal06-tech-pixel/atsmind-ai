@@ -14,6 +14,7 @@ import { closeVectorStore } from "../services/vectorStore.service.js";
 import { shutdownAnalytics } from "../services/analytics.service.js";
 import { enforceResumeRetention } from "./processors/retention.processor.js";
 import { processResumeAnalysis } from "./processors/resumeAnalysis.processor.js";
+import { processCandidateEvaluation } from "./processors/candidateEvaluation.processor.js";
 
 await connectDB();
 
@@ -23,6 +24,15 @@ const worker = new Worker("resume-analysis", processResumeAnalysis, {
   connection,
   concurrency,
 });
+
+const candidateWorker = new Worker(
+  "candidate-evaluation",
+  processCandidateEvaluation,
+  {
+    connection,
+    concurrency,
+  }
+);
 
 const retentionWorker = new Worker(
   "retention",
@@ -61,8 +71,28 @@ worker.on("failed", (job, error) => {
   });
 });
 
+candidateWorker.on("completed", (job) => {
+  logger.info({ jobId: job.id }, "Candidate evaluation job completed");
+});
+
+candidateWorker.on("failed", (job, error) => {
+  logger.error(
+    {
+      jobId: job?.id || "unknown",
+      attemptsMade: job?.attemptsMade || 0,
+      error: error.message,
+    },
+    "Candidate evaluation job failed"
+  );
+  captureException(error, {
+    jobId: job?.id || "unknown",
+    attemptsMade: job?.attemptsMade || 0,
+  });
+});
+
 const shutdown = async () => {
   await worker.close();
+  await candidateWorker.close();
   await retentionWorker.close();
   await shutdownAnalytics();
   await closeVectorStore();
