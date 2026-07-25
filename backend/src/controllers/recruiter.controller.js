@@ -55,7 +55,7 @@ const jobOpeningPatchSchema = z.object({
 
 const listJobsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).optional().default(1),
-  limit: z.coerce.number().int().min(1).max(50).optional().default(20),
+  limit: z.coerce.number().int().min(1).max(100).optional().default(20),
   status: z.enum(jobStatuses).optional(),
   search: z.string().trim().max(160).optional().default(""),
   sort: z.enum(["updatedAt", "createdAt", "title"]).optional().default("updatedAt"),
@@ -499,6 +499,7 @@ export const uploadCandidateResumes = async (req, res) => {
       const file = files[index];
       const metadata = candidateMetadata[index] || {};
       const fileBuffer = file.buffer;
+      let candidate = null;
 
       if (!isPdfBuffer(fileBuffer)) {
         failed.push({
@@ -509,9 +510,53 @@ export const uploadCandidateResumes = async (req, res) => {
       }
 
       const contentHash = getCandidateHash(fileBuffer);
+      const queueJobId = `${job._id.toString()}-${contentHash}`;
       let storedFile = null;
 
       try {
+        const duplicateCandidate = await CandidateResume.findOne({
+          recruiterId: req.userId,
+          jobOpeningId: job._id,
+          contentHash,
+        });
+        const duplicateQueueJob = duplicateCandidate
+          ? await candidateEvaluationQueue.getJob(queueJobId)
+          : null;
+
+        if (duplicateCandidate && duplicateQueueJob) {
+          failed.push({
+            fileName: file.originalname,
+            message: "Duplicate resume for this job requirement",
+          });
+          continue;
+        }
+
+        if (
+          duplicateCandidate &&
+          !["queued", "failed"].includes(duplicateCandidate.processingStatus)
+        ) {
+          failed.push({
+            fileName: file.originalname,
+            message: "Duplicate resume for this job requirement",
+          });
+          continue;
+        }
+
+        if (duplicateCandidate) {
+          await Promise.all([
+            CandidateEvaluation.deleteOne({
+              recruiterId: req.userId,
+              candidateResumeId: duplicateCandidate._id,
+            }),
+            deleteResumeFile({
+              storageProvider: duplicateCandidate.storageProvider,
+              s3Key: duplicateCandidate.s3Key,
+              filePath: duplicateCandidate.filePath,
+            }).catch(() => false),
+          ]);
+          await duplicateCandidate.deleteOne();
+        }
+
         storedFile = await saveResumeFile({
           userId: req.userId,
           originalName: file.originalname,
@@ -519,7 +564,7 @@ export const uploadCandidateResumes = async (req, res) => {
         });
         storedFiles.push(storedFile);
 
-        const candidate = await CandidateResume.create({
+        candidate = await CandidateResume.create({
           recruiterId: req.userId,
           jobOpeningId: job._id,
           candidateName: clean(metadata.candidateName),
@@ -543,13 +588,25 @@ export const uploadCandidateResumes = async (req, res) => {
             candidateResumeId: candidate._id.toString(),
           },
           {
-            jobId: `${job._id.toString()}:${contentHash}`,
+            jobId: queueJobId,
           }
         );
 
         storedFiles.splice(storedFiles.indexOf(storedFile), 1);
         accepted.push(serializeCandidate(candidate));
       } catch (error) {
+        console.error("Queue candidate resume error:", {
+          fileName: file.originalname,
+          message: error.message,
+        });
+
+        if (candidate) {
+          await CandidateResume.deleteOne({
+            _id: candidate._id,
+            recruiterId: req.userId,
+          }).catch(() => {});
+        }
+
         if (storedFile) {
           await deleteResumeFile(storedFile).catch(() => {});
         }
@@ -559,7 +616,7 @@ export const uploadCandidateResumes = async (req, res) => {
           message:
             error?.code === 11000
               ? "Duplicate resume for this job requirement"
-              : "Could not queue this resume",
+              : "Could not queue this resume. Confirm Redis and the worker are running.",
         });
       }
     }
