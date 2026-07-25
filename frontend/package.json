@@ -13,7 +13,7 @@
     "@ai-sdk/react": "^3.0.177",
     "@react-pdf/renderer": "^4.5.1",
     "@tailwindcss/vite": "^4.2.1",
-    "ai": "^6.0.175",
+    "ai": "^7.0.37",
     "axios": "^1.13.5",
     "framer-motion": "^12.38.0",
     "html2canvas": "^1.4.1",
