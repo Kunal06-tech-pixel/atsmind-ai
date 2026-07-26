@@ -7,7 +7,7 @@ import { requireCsrf } from "../middleware/csrf.middleware.js";
 const router = express.Router();
 
 router.use(protect);
-router.use(authorizeRoles("job_seeker", "admin"));
+router.use(authorizeRoles("job_seeker", "recruiter", "admin"));
 
 router.post("/improve", requireCsrf, improveSection);
 
