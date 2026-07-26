@@ -21,6 +21,10 @@ build/
 *.swo
 *~
 
+# Local agent/spec tooling
+.agents/
+.kiro/
+
 # OS
 .DS_Store
 Thumbs.db
