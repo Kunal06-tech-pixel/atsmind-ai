@@ -7,7 +7,7 @@ const readCookie = (name) =>
     ?.split("=")[1] || "";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:5000",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://atsmind-ai.onrender.com",
   withCredentials: true,
 });
 
