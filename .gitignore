@@ -24,7 +24,22 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
 *.log
+
+# Local presentation and planning docs
+ATSmind_AI_First_Review_Presentation.pptx
+DEPLOYMENT.md
+PRESENTATION_CONTENT.md
+CHAT-FEATURE.md
+EMBEDDING-WORKFLOW.md
+
+# Local/manual test scripts
+test-complete-workflow.js
+test-db-embedding.js
+test-embedding-retrieval.js
+test-embedding-search.js
+test-embedding.js
 
 # Backend specific
 backend/.env
