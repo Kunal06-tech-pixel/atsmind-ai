@@ -65,9 +65,9 @@ const issueTokens = async (res, user) => {
   res.cookie("access_token", accessToken, accessCookieOptions);
   res.cookie("token", accessToken, accessCookieOptions);
   res.cookie("refresh_token", refreshToken, refreshCookieOptions);
-  setCsrfCookie(res);
+  const csrfToken = setCsrfCookie(res);
 
-  return accessToken;
+  return { accessToken, csrfToken };
 };
 
 export const signup = async (req, res) => {
@@ -109,11 +109,12 @@ export const signup = async (req, res) => {
             }
           : undefined,
     });
-    const accessToken = await issueTokens(res, user);
+    const { accessToken, csrfToken } = await issueTokens(res, user);
 
     return res.status(201).json({
       message: "Signup successful",
       accessToken,
+      csrfToken,
       user: serializeUser(user),
     });
   } catch (error) {
@@ -139,11 +140,12 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const accessToken = await issueTokens(res, user);
+    const { accessToken, csrfToken } = await issueTokens(res, user);
 
     return res.status(200).json({
       message: "Login successful",
       accessToken,
+      csrfToken,
       user: serializeUser(user),
     });
   } catch (error) {
@@ -172,11 +174,12 @@ export const refresh = async (req, res) => {
     existing.revokedAt = new Date();
     await existing.save();
 
-    const accessToken = await issueTokens(res, existing.user);
+    const { accessToken, csrfToken } = await issueTokens(res, existing.user);
 
     return res.json({
       message: "Token refreshed",
       accessToken,
+      csrfToken,
       user: serializeUser(existing.user),
     });
   } catch (error) {

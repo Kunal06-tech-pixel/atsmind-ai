@@ -6,6 +6,9 @@ const readCookie = (name) =>
     .find((row) => row.startsWith(`${name}=`))
     ?.split("=")[1] || "";
 
+const readCsrfToken = () =>
+  readCookie("csrf_token") || localStorage.getItem("csrf_token") || "";
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "https://atsmind-ai.onrender.com",
   withCredentials: true,
@@ -15,7 +18,7 @@ api.interceptors.request.use((config) => {
   const method = String(config.method || "get").toLowerCase();
 
   if (!["get", "head", "options"].includes(method)) {
-    const csrfToken = readCookie("csrf_token");
+    const csrfToken = readCsrfToken();
 
     if (csrfToken) {
       config.headers["x-csrf-token"] = decodeURIComponent(csrfToken);
@@ -26,7 +29,15 @@ api.interceptors.request.use((config) => {
 });
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const csrfToken = response.data?.csrfToken;
+
+    if (csrfToken) {
+      localStorage.setItem("csrf_token", csrfToken);
+    }
+
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
     const status = error.response?.status;
@@ -41,7 +52,13 @@ api.interceptors.response.use(
       !url.includes("/api/auth/refresh")
     ) {
       originalRequest._retry = true;
-      await api.post("/api/auth/refresh");
+      const response = await api.post("/api/auth/refresh");
+      const csrfToken = response.data?.csrfToken;
+
+      if (csrfToken) {
+        localStorage.setItem("csrf_token", csrfToken);
+      }
+
       return api(originalRequest);
     }
 

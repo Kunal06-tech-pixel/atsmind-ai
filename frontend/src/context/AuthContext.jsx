@@ -24,6 +24,7 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error("Logout error:", err);
     } finally {
+      localStorage.removeItem("csrf_token");
       setUser(null);
     }
   };
