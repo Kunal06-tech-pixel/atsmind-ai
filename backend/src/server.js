@@ -23,13 +23,33 @@ import chatRoutes from "./routes/chat.routes.js";
 
 const app = express();
 
+const allowedFrontendOrigins = new Set([
+  "http://localhost:5173",
+  "https://atsmind-ai.vercel.app",
+  ...String(process.env.FRONTEND_ORIGIN || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+  ...String(process.env.FRONTEND_ORIGINS || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+]);
+
 /* DATABASE */
 connectDB();
 
 /* MIDDLEWARE */
 app.use(
   cors({
-    origin: process.env.FRONTEND_ORIGIN || "http://localhost:5173",
+    origin(origin, callback) {
+      if (!origin || allowedFrontendOrigins.has(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error("Origin is not allowed by CORS"));
+    },
     credentials: true,
   })
 );

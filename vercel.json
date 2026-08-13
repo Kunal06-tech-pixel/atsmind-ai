@@ -6,6 +6,10 @@
   "installCommand": "npm ci --prefix frontend",
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "https://atsmind-ai.onrender.com/api/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

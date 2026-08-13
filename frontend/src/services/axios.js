@@ -9,8 +9,22 @@ const readCookie = (name) =>
 const readCsrfToken = () =>
   readCookie("csrf_token") || localStorage.getItem("csrf_token") || "";
 
+const defaultApiBaseUrl = (() => {
+  const hostname = window.location.hostname;
+
+  if (hostname === "localhost" || hostname === "127.0.0.1") {
+    return "http://localhost:5000";
+  }
+
+  if (hostname.endsWith(".vercel.app")) {
+    return "";
+  }
+
+  return "https://atsmind-ai.onrender.com";
+})();
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "https://atsmind-ai.onrender.com",
+  baseURL: import.meta.env.VITE_API_BASE_URL || defaultApiBaseUrl,
   withCredentials: true,
 });
 
