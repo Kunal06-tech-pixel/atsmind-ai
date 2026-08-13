@@ -125,17 +125,18 @@ const CandidateUpload = () => {
     >
       <div className="mx-auto max-w-5xl space-y-5">
         {error && (
-          <section className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <section id="candidate-upload-error" role="alert" aria-live="polite" className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             <AlertCircle size={17} className="mt-0.5 shrink-0" />
             <p>{error}</p>
           </section>
         )}
 
-        <form onSubmit={handleSubmit} className="liquid-glass-strong rounded-2xl p-5">
+        <form onSubmit={handleSubmit} className="liquid-glass-strong rounded-2xl p-5" aria-describedby={error ? "candidate-upload-error" : undefined}>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className={labelClass}>Job Requirement</label>
+              <label className={labelClass} htmlFor="candidate-upload-job">Job Requirement</label>
               <select
+                id="candidate-upload-job"
                 value={jobId}
                 onChange={(event) => setJobId(event.target.value)}
                 className={inputClass}
@@ -154,8 +155,9 @@ const CandidateUpload = () => {
             </div>
 
             <div>
-              <label className={labelClass}>PDF Resumes</label>
+              <label className={labelClass} htmlFor="candidate-upload-files">PDF Resumes</label>
               <input
+                id="candidate-upload-files"
                 type="file"
                 accept="application/pdf,.pdf"
                 multiple
@@ -202,7 +204,7 @@ const CandidateUpload = () => {
         </form>
 
         {progress && (
-          <section className="liquid-glass rounded-2xl p-5">
+          <section className="liquid-glass rounded-2xl p-5" role="status" aria-live="polite">
             <h2 className="text-lg font-semibold tracking-tight text-slate-950">
               Processing progress
             </h2>

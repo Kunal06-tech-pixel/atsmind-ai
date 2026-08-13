@@ -111,7 +111,9 @@ const CandidateComparison = () => {
       <div className="mx-auto max-w-7xl space-y-5">
         <section className="liquid-glass rounded-2xl p-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <label className="sr-only" htmlFor="comparison-job-filter">Job requirement</label>
             <select
+              id="comparison-job-filter"
               value={jobId}
               onChange={(event) => setJobId(event.target.value)}
               className="liquid-control h-10 rounded-xl px-3 text-sm text-slate-800 outline-none lg:w-80"
@@ -142,7 +144,7 @@ const CandidateComparison = () => {
         </section>
 
         {error && (
-          <section className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <section role="alert" aria-live="polite" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </section>
         )}

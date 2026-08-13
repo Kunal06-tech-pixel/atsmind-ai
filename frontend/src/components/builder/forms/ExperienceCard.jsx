@@ -84,7 +84,9 @@ const ExperienceCard = ({ exp, index, setData }) => {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <label className="sr-only" htmlFor={`experience-${index}-job-title`}>Job title</label>
         <input
+          id={`experience-${index}-job-title`}
           type="text"
           name="jobTitle"
           value={exp.jobTitle}
@@ -93,7 +95,9 @@ const ExperienceCard = ({ exp, index, setData }) => {
           className={inputClass}
         />
 
+        <label className="sr-only" htmlFor={`experience-${index}-company`}>Company</label>
         <input
+          id={`experience-${index}-company`}
           type="text"
           name="company"
           value={exp.company}
@@ -104,7 +108,9 @@ const ExperienceCard = ({ exp, index, setData }) => {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <label className="sr-only" htmlFor={`experience-${index}-start`}>Start date</label>
         <input
+          id={`experience-${index}-start`}
           type="date"
           name="start"
           value={exp.start}
@@ -112,7 +118,9 @@ const ExperienceCard = ({ exp, index, setData }) => {
           className={inputClass}
         />
 
+        <label className="sr-only" htmlFor={`experience-${index}-end`}>End date</label>
         <input
+          id={`experience-${index}-end`}
           type="date"
           name="end"
           value={exp.end}
@@ -123,7 +131,7 @@ const ExperienceCard = ({ exp, index, setData }) => {
 
       <div>
         <div className="mb-2 flex items-center justify-between gap-3">
-          <label className={labelClass}>Responsibilities</label>
+          <label className={labelClass} htmlFor={`experience-${index}-responsibilities`}>Responsibilities</label>
 
           <button
             type="button"
@@ -136,6 +144,7 @@ const ExperienceCard = ({ exp, index, setData }) => {
         </div>
 
         <textarea
+          id={`experience-${index}-responsibilities`}
           name="responsibilities"
           value={exp.responsibilities}
           onChange={handleChange}

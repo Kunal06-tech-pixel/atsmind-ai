@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -83,19 +83,45 @@ const SkillPills = ({ items, tone = "slate" }) => {
 const AnalysisDetailModal = ({ analysis, onClose }) => {
   const normalized = normalizeAnalysis(analysis);
   const [exporting, setExporting] = useState(false);
+  const dialogRef = useRef(null);
+  const closeButtonRef = useRef(null);
+  const previouslyFocusedRef = useRef(null);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") onClose();
+
+      if (event.key === "Tab" && dialogRef.current) {
+        const focusable = Array.from(
+          dialogRef.current.querySelectorAll(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+        );
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (!first || !last) return;
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
     };
 
+    previouslyFocusedRef.current = document.activeElement;
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", handleKeyDown);
+    const focusFrame = window.requestAnimationFrame(() => closeButtonRef.current?.focus());
 
     return () => {
+      window.cancelAnimationFrame(focusFrame);
       document.body.style.overflow = originalOverflow;
       window.removeEventListener("keydown", handleKeyDown);
+      previouslyFocusedRef.current?.focus?.();
     };
   }, [onClose]);
 
@@ -187,10 +213,16 @@ const AnalysisDetailModal = ({ analysis, onClose }) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className="liquid-glass-strong w-full max-w-3xl rounded-3xl p-5">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="analysis-detail-title"
+        className="liquid-glass-strong w-full max-w-3xl rounded-3xl p-5"
+      >
         <header className="mb-4 flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <h2 className="flex items-center gap-2 truncate text-sm font-semibold text-slate-950">
+            <h2 id="analysis-detail-title" className="flex items-center gap-2 truncate text-sm font-semibold text-slate-950">
               <FileText size={17} className="text-teal-700" />
               <span className="truncate">{compactFileName(normalized.fileName)}</span>
             </h2>
@@ -200,6 +232,7 @@ const AnalysisDetailModal = ({ analysis, onClose }) => {
           </div>
 
           <button
+            ref={closeButtonRef}
             type="button"
             onClick={onClose}
             className="rounded-full p-1.5 text-slate-500 transition hover:bg-white/40 hover:text-slate-950"
@@ -266,7 +299,7 @@ const AnalysisDetailModal = ({ analysis, onClose }) => {
             type="button"
             onClick={handleExport}
             disabled={exporting}
-            className="liquid-button-primary liquid-shine inline-flex h-9 items-center gap-2 rounded-xl px-4 text-xs font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+            className="ats-control-button ats-control-button-primary inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Download size={14} />
             {exporting ? "Exporting..." : "Export as PDF"}

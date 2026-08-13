@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useReducedMotion } from "framer-motion";
 import { scoreColor } from "../utils/analysis";
 
 const ScoreRing = ({
@@ -10,9 +11,11 @@ const ScoreRing = ({
 }) => {
   const safeScore = Math.max(0, Math.min(100, Math.round(Number(score) || 0)));
   const [animatedProgress, setAnimatedProgress] = useState(0);
+  const reduceMotion = useReducedMotion();
+  const shouldAnimate = animated && !reduceMotion;
 
   useEffect(() => {
-    if (!animated) {
+    if (!shouldAnimate) {
       return undefined;
     }
 
@@ -28,9 +31,9 @@ const ScoreRing = ({
     }, 15);
 
     return () => window.clearInterval(interval);
-  }, [animated, safeScore]);
+  }, [safeScore, shouldAnimate]);
 
-  const progress = animated ? animatedProgress : safeScore;
+  const progress = shouldAnimate ? animatedProgress : safeScore;
 
   const metrics = useMemo(() => {
     const radius = (size - strokeWidth) / 2;
@@ -50,7 +53,7 @@ const ScoreRing = ({
           cx={size / 2}
           cy={size / 2}
           r={metrics.radius}
-          stroke="#e8edf4"
+          stroke="var(--ats-score-track, rgba(164, 253, 240, 0.1))"
           strokeWidth={strokeWidth}
           fill="none"
         />
@@ -71,7 +74,7 @@ const ScoreRing = ({
           y="50%"
           textAnchor="middle"
           dominantBaseline="middle"
-          fill="#111827"
+          fill="var(--ats-score-text, #f3fbf9)"
           fontSize={fontSize}
           fontWeight="700"
         >

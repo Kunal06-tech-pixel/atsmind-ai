@@ -24,6 +24,8 @@ build/
 # Local agent/spec tooling
 .agents/
 .kiro/
+.hallmark/
+.impeccable/
 
 # OS
 .DS_Store

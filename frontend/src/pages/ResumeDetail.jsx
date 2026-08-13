@@ -263,7 +263,7 @@ const ResumeDetail = () => {
   if (error || !analysis || !normalized) {
     return (
       <AppShell title="Analysis detail" description="Saved report">
-        <div className="liquid-glass mx-auto max-w-3xl rounded-2xl p-10 text-center">
+        <div role="alert" className="liquid-glass mx-auto max-w-3xl rounded-2xl p-10 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-red-200/70 bg-red-50/70 text-red-600 backdrop-blur-xl">
             <AlertTriangle size={22} />
           </div>

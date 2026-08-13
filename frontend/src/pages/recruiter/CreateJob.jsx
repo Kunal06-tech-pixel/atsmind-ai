@@ -70,14 +70,14 @@ const CreateJob = () => {
       title="Create job requirement"
       description="Define the job requirements candidates will be evaluated against."
       actions={
-        <SecondaryButton onClick={() => navigate("/recruiter/jobs")}>
+        <SecondaryButton onClick={() => navigate("/recruiter/jobs")} className="hidden sm:inline-flex">
           Back to jobs
         </SecondaryButton>
       }
     >
-      <form onSubmit={handleSubmit} className="mx-auto max-w-5xl space-y-5">
+      <form onSubmit={handleSubmit} className="mx-auto max-w-5xl space-y-5" aria-describedby={error ? "create-job-error" : undefined}>
         {error && (
-          <section className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <section id="create-job-error" role="alert" aria-live="polite" className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             <AlertCircle size={17} className="mt-0.5 shrink-0" />
             <p>{error}</p>
           </section>
@@ -100,8 +100,9 @@ const CreateJob = () => {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className={labelClass}>Job Title</label>
+              <label className={labelClass} htmlFor="create-job-title">Job Title</label>
               <input
+                id="create-job-title"
                 name="title"
                 value={form.title}
                 onChange={handleChange}
@@ -111,8 +112,9 @@ const CreateJob = () => {
             </div>
 
             <div>
-              <label className={labelClass}>Company Name</label>
+              <label className={labelClass} htmlFor="create-job-company-name">Company Name</label>
               <input
+                id="create-job-company-name"
                 name="companyName"
                 value={form.companyName}
                 onChange={handleChange}
@@ -122,8 +124,9 @@ const CreateJob = () => {
             </div>
 
             <div>
-              <label className={labelClass}>Department</label>
+              <label className={labelClass} htmlFor="create-job-department">Department</label>
               <input
+                id="create-job-department"
                 name="department"
                 value={form.department}
                 onChange={handleChange}
@@ -133,8 +136,9 @@ const CreateJob = () => {
             </div>
 
             <div>
-              <label className={labelClass}>Location</label>
+              <label className={labelClass} htmlFor="create-job-location">Location</label>
               <input
+                id="create-job-location"
                 name="location"
                 value={form.location}
                 onChange={handleChange}
@@ -145,8 +149,9 @@ const CreateJob = () => {
           </div>
 
           <div className="mt-4">
-            <label className={labelClass}>Job Description</label>
+            <label className={labelClass} htmlFor="create-job-description">Job Description</label>
             <textarea
+              id="create-job-description"
               name="jobDescription"
               value={form.jobDescription}
               onChange={handleChange}
@@ -163,8 +168,9 @@ const CreateJob = () => {
           </h2>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <div>
-              <label className={labelClass}>Mandatory Skills</label>
+              <label className={labelClass} htmlFor="create-job-mandatory-skills">Mandatory Skills</label>
               <textarea
+                id="create-job-mandatory-skills"
                 name="mandatorySkills"
                 value={form.mandatorySkills}
                 onChange={handleChange}
@@ -175,8 +181,9 @@ const CreateJob = () => {
             </div>
 
             <div>
-              <label className={labelClass}>Preferred Skills</label>
+              <label className={labelClass} htmlFor="create-job-preferred-skills">Preferred Skills</label>
               <textarea
+                id="create-job-preferred-skills"
                 name="preferredSkills"
                 value={form.preferredSkills}
                 onChange={handleChange}
@@ -187,8 +194,9 @@ const CreateJob = () => {
             </div>
 
             <div>
-              <label className={labelClass}>Minimum Experience</label>
+              <label className={labelClass} htmlFor="create-job-minimum-experience">Minimum Experience</label>
               <input
+                id="create-job-minimum-experience"
                 name="minimumExperience"
                 type="number"
                 min="0"
@@ -200,8 +208,9 @@ const CreateJob = () => {
             </div>
 
             <div>
-              <label className={labelClass}>Minimum Qualification</label>
+              <label className={labelClass} htmlFor="create-job-minimum-qualification">Minimum Qualification</label>
               <input
+                id="create-job-minimum-qualification"
                 name="minimumQualification"
                 value={form.minimumQualification}
                 onChange={handleChange}
@@ -211,8 +220,9 @@ const CreateJob = () => {
             </div>
 
             <div>
-              <label className={labelClass}>Status</label>
+              <label className={labelClass} htmlFor="create-job-status">Status</label>
               <select
+                id="create-job-status"
                 name="status"
                 value={form.status}
                 onChange={handleChange}

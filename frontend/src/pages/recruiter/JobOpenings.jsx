@@ -119,6 +119,7 @@ const JobOpenings = () => {
                 className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
               />
               <input
+                aria-label="Search job requirements"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 className="liquid-control h-10 w-full rounded-xl pl-9 pr-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-teal-300/70 focus:ring-4 focus:ring-teal-500/15 lg:w-80"
@@ -126,11 +127,12 @@ const JobOpenings = () => {
               />
             </div>
 
-            <div className="liquid-segmented flex w-full overflow-x-auto rounded-2xl p-1 lg:w-auto">
+            <div className="liquid-segmented flex w-full overflow-x-auto rounded-2xl p-1 lg:w-auto" role="group" aria-label="Filter job requirements by status">
               {statusItems.map((item) => (
                 <button
                   key={item.value || "all"}
                   type="button"
+                  aria-pressed={status === item.value}
                   onClick={() => setStatus(item.value)}
                   className={`whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition ${
                     status === item.value
@@ -146,7 +148,7 @@ const JobOpenings = () => {
         </section>
 
         {error && (
-          <section className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <section role="alert" aria-live="polite" className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             <AlertCircle size={17} className="mt-0.5 shrink-0" />
             <p>{error}</p>
           </section>

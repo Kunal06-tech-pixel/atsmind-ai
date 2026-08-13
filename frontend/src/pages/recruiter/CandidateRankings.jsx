@@ -130,7 +130,9 @@ const CandidateRankings = ({ statusFilter = "" }) => {
       <div className="mx-auto max-w-7xl space-y-5">
         <section className="liquid-glass rounded-2xl p-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <label className="sr-only" htmlFor="rankings-job-filter">Job requirement</label>
             <select
+              id="rankings-job-filter"
               value={jobId}
               onChange={(event) => setJobId(event.target.value)}
               className="liquid-control h-10 rounded-xl px-3 text-sm text-slate-800 outline-none lg:w-80"
@@ -152,6 +154,7 @@ const CandidateRankings = ({ statusFilter = "" }) => {
                 className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
               />
               <input
+                aria-label="Search candidates"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 className="liquid-control h-10 w-full rounded-xl pl-9 pr-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-teal-300/70 focus:ring-4 focus:ring-teal-500/15 lg:w-80"
@@ -171,7 +174,7 @@ const CandidateRankings = ({ statusFilter = "" }) => {
         )}
 
         {error && (
-          <section className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <section role="alert" aria-live="polite" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </section>
         )}
@@ -184,8 +187,8 @@ const CandidateRankings = ({ statusFilter = "" }) => {
             </div>
           </section>
         ) : evaluations.length ? (
-          <section className="liquid-glass overflow-hidden rounded-2xl">
-            <table className="w-full border-collapse text-left">
+          <section className="liquid-glass overflow-x-auto rounded-2xl">
+            <table className="w-full min-w-[42rem] border-collapse text-left">
               <thead className="liquid-divider border-b bg-white/28">
                 <tr className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
                   <th className="px-4 py-3">Rank</th>

@@ -131,11 +131,7 @@ const AnalysisTable = ({ analyses, onNavigate }) => (
             : normalized.skillsMatch;
 
           return (
-            <tr
-              key={normalized.id}
-              className="group cursor-pointer transition hover:bg-white/32"
-              onClick={() => onNavigate(normalized.id)}
-            >
+            <tr key={normalized.id} className="group transition hover:bg-white/32">
               <td className="max-w-[22rem] px-4 py-4">
                 <div className="flex items-center gap-3">
                   <div className="liquid-pill flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-500">
@@ -179,10 +175,14 @@ const AnalysisTable = ({ analyses, onNavigate }) => (
                 {formatRelativeTime(normalized.createdAt)}
               </td>
               <td className="px-4 py-4 text-right">
-                <ArrowUpRight
-                  size={17}
-                  className="ml-auto text-slate-400 transition group-hover:text-slate-950"
-                />
+                <button
+                  type="button"
+                  onClick={() => onNavigate(normalized.id)}
+                  className="ml-auto inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white/10 hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300"
+                  aria-label={`Open analysis for ${compactFileName(normalized.fileName)}`}
+                >
+                  <ArrowUpRight size={17} />
+                </button>
               </td>
             </tr>
           );
@@ -345,6 +345,7 @@ const Dashboard = () => {
                   className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
                 />
                 <input
+                  aria-label="Search analyses"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   className="liquid-control h-10 w-full rounded-xl pl-9 pr-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-teal-300/70 focus:ring-4 focus:ring-teal-500/15 sm:w-72"
@@ -352,11 +353,12 @@ const Dashboard = () => {
                 />
               </div>
 
-              <div className="liquid-segmented flex rounded-2xl p-1">
+              <div className="liquid-segmented flex rounded-2xl p-1" role="group" aria-label="Filter analyses by score">
                 {filterItems.map((item) => (
                   <button
                     key={item.value}
                     type="button"
+                    aria-pressed={filter === item.value}
                     onClick={() => setFilter(item.value)}
                     className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
                       filter === item.value
@@ -373,7 +375,7 @@ const Dashboard = () => {
         </section>
 
         {error && (
-          <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div role="alert" aria-live="polite" className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             <AlertCircle size={16} />
             {error}
           </div>

@@ -18,10 +18,16 @@ const ResumeChat = ({ analysisId, fileName, isOpen, onClose }) => {
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const dialogRef = useRef(null);
+  const closeButtonRef = useRef(null);
+  const previouslyFocusedRef = useRef(null);
   const toast = useToast();
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const behavior = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+      ? "auto"
+      : "smooth";
+    messagesEndRef.current?.scrollIntoView({ behavior });
   };
 
   const loadChatHistory = useCallback(async () => {
@@ -45,6 +51,42 @@ const ResumeChat = ({ analysisId, fileName, isOpen, onClose }) => {
       loadChatHistory();
     }
   }, [analysisId, isOpen, loadChatHistory]);
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    previouslyFocusedRef.current = document.activeElement;
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") onClose();
+      if (event.key !== "Tab" || !dialogRef.current) return;
+
+      const focusable = Array.from(
+        dialogRef.current.querySelectorAll(
+          'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
+        )
+      );
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!first || !last) return;
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    const focusFrame = window.requestAnimationFrame(() => closeButtonRef.current?.focus());
+
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      window.removeEventListener("keydown", handleKeyDown);
+      previouslyFocusedRef.current?.focus?.();
+    };
+  }, [isOpen, onClose]);
 
   const sendMessage = async (event) => {
     event.preventDefault();
@@ -95,18 +137,24 @@ const ResumeChat = ({ analysisId, fileName, isOpen, onClose }) => {
       />
 
       <div className="chat-popup">
-        <div className="resume-chat">
+        <div
+          ref={dialogRef}
+          className="resume-chat"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="resume-chat-title"
+        >
           <div className="chat-header">
             <div className="chat-title-wrap">
               <div className="chat-header-icon">
                 <Sparkles size={17} />
               </div>
               <div className="min-w-0">
-                <h3>Resume advisor</h3>
+                <h3 id="resume-chat-title">Resume advisor</h3>
                 <p className="chat-subtitle">{fileName}</p>
               </div>
             </div>
-            <button className="chat-close-btn" onClick={onClose} aria-label="Close chat">
+            <button ref={closeButtonRef} type="button" className="chat-close-btn" onClick={onClose} aria-label="Close chat">
               <X size={17} />
             </button>
           </div>
@@ -177,7 +225,11 @@ const ResumeChat = ({ analysisId, fileName, isOpen, onClose }) => {
           </div>
 
           <form className="chat-input-form" onSubmit={sendMessage}>
+            <label className="sr-only" htmlFor="resume-chat-input">
+              Ask about this resume
+            </label>
             <input
+              id="resume-chat-input"
               type="text"
               className="chat-input"
               placeholder="Ask about your resume..."

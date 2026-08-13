@@ -87,11 +87,12 @@ const SkillsForm = ({ data, setData }) => {
 
       <div className={`${nestedCardClass} space-y-6`}>
         <div>
-          <p className="mb-2 text-sm font-medium text-slate-700">
+          <label htmlFor="skills-technical" className="mb-2 block text-sm font-medium text-slate-700">
             Technical Skills
-          </p>
+          </label>
 
           <input
+            id="skills-technical"
             value={techInput}
             onChange={(e) => setTechInput(e.target.value)}
             onKeyDown={(e) => {
@@ -113,9 +114,10 @@ const SkillsForm = ({ data, setData }) => {
         </div>
 
         <div>
-          <p className="mb-2 text-sm font-medium text-slate-700">Soft Skills</p>
+          <label htmlFor="skills-soft" className="mb-2 block text-sm font-medium text-slate-700">Soft Skills</label>
 
           <input
+            id="skills-soft"
             value={softInput}
             onChange={(e) => setSoftInput(e.target.value)}
             onKeyDown={(e) => {
@@ -141,14 +143,18 @@ const SkillsForm = ({ data, setData }) => {
             Certifications
           </p>
 
+          <label className="sr-only" htmlFor="certification-name">Certification name</label>
           <input
+            id="certification-name"
             value={certName}
             onChange={(e) => setCertName(e.target.value)}
             placeholder="Certification name"
             className={`${inputClass} mb-2`}
           />
 
+          <label className="sr-only" htmlFor="certification-link">Certification link</label>
           <input
+            id="certification-link"
             value={certLink}
             onChange={(e) => setCertLink(e.target.value)}
             placeholder="Certification link (optional)"

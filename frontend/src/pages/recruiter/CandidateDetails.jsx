@@ -108,14 +108,14 @@ const CandidateDetails = () => {
       }
       description="Review score breakdown, evidence, and recruiter notes."
       actions={
-        <SecondaryButton onClick={() => navigate("/recruiter/rankings")}>
+        <SecondaryButton onClick={() => navigate("/recruiter/rankings")} className="hidden sm:inline-flex">
           Back to rankings
         </SecondaryButton>
       }
     >
       <div className="mx-auto max-w-7xl space-y-5">
         {error && (
-          <section className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <section id="candidate-details-error" role="alert" aria-live="polite" className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             <AlertCircle size={17} className="mt-0.5 shrink-0" />
             <p>{error}</p>
           </section>
@@ -246,12 +246,15 @@ const CandidateDetails = () => {
               </h2>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <div>
-                  <label className={labelClass}>Review Status</label>
+                  <label className={labelClass} htmlFor="candidate-review-status">Review Status</label>
                   <select
+                    id="candidate-review-status"
                     value={evaluation.recruitmentStatus}
                     onChange={(event) => updateStatus(event.target.value)}
                     className={inputClass}
                     disabled={saving}
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={error ? "candidate-details-error" : undefined}
                   >
                     {statusOptions.map((status) => (
                       <option key={status} value={status}>
@@ -262,8 +265,9 @@ const CandidateDetails = () => {
                 </div>
 
                 <div>
-                  <label className={labelClass}>Override Score</label>
+                  <label className={labelClass} htmlFor="candidate-override-score">Override Score</label>
                   <input
+                    id="candidate-override-score"
                     value={overrideScore}
                     onChange={(event) => setOverrideScore(event.target.value)}
                     type="number"
@@ -271,17 +275,22 @@ const CandidateDetails = () => {
                     max="100"
                     className={inputClass}
                     placeholder="Optional"
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={error ? "candidate-details-error" : undefined}
                   />
                 </div>
               </div>
               <div className="mt-4">
-                <label className={labelClass}>Recruiter Notes</label>
+                <label className={labelClass} htmlFor="candidate-recruiter-notes">Recruiter Notes</label>
                 <textarea
+                  id="candidate-recruiter-notes"
                   value={notes}
                   onChange={(event) => setNotes(event.target.value)}
                   rows={5}
                   className={`${inputClass} resize-y`}
                   placeholder="Private notes for this candidate"
+                  aria-invalid={Boolean(error)}
+                  aria-describedby={error ? "candidate-details-error" : undefined}
                 />
               </div>
               <PrimaryButton onClick={saveNotes} disabled={saving} className="mt-4">

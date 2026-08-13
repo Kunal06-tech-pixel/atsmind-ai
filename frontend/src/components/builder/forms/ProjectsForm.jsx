@@ -104,7 +104,9 @@ const ProjectsForm = ({ data, setData }) => {
             <span className="text-xs text-slate-400">Work #{index + 1}</span>
           </div>
 
+          <label className="sr-only" htmlFor={`project-${index}-title`}>Project title</label>
           <input
+            id={`project-${index}-title`}
             type="text"
             name="title"
             value={project.title}
@@ -113,7 +115,9 @@ const ProjectsForm = ({ data, setData }) => {
             className={inputClass}
           />
 
+          <label className="sr-only" htmlFor={`project-${index}-tech-stack`}>Technology stack</label>
           <input
+            id={`project-${index}-tech-stack`}
             type="text"
             name="techStack"
             value={project.techStack}
@@ -124,7 +128,7 @@ const ProjectsForm = ({ data, setData }) => {
 
           <div>
             <div className="mb-2 flex items-center justify-between gap-3">
-              <label className={labelClass}>Description</label>
+              <label className={labelClass} htmlFor={`project-${index}-description`}>Description</label>
 
               <button
                 type="button"
@@ -137,6 +141,7 @@ const ProjectsForm = ({ data, setData }) => {
             </div>
 
             <textarea
+              id={`project-${index}-description`}
               name="description"
               value={project.description}
               onChange={(e) => handleChange(index, e)}
@@ -146,7 +151,9 @@ const ProjectsForm = ({ data, setData }) => {
             />
           </div>
 
+          <label className="sr-only" htmlFor={`project-${index}-github`}>GitHub repository link</label>
           <input
+            id={`project-${index}-github`}
             type="text"
             name="github"
             value={project.github}
@@ -155,7 +162,9 @@ const ProjectsForm = ({ data, setData }) => {
             className={inputClass}
           />
 
+          <label className="sr-only" htmlFor={`project-${index}-live`}>Live project link</label>
           <input
+            id={`project-${index}-live`}
             type="text"
             name="live"
             value={project.live}

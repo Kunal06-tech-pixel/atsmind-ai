@@ -458,7 +458,7 @@ const Builder = () => {
                   PDF
                 </span>
               </div>
-              <div id="resume-preview">
+              <div className="resume-preview-stage">
                 <ResumePreview data={resumeData} />
               </div>
             </div>

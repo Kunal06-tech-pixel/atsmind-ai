@@ -66,7 +66,9 @@ const EducationForm = ({ data, setData }) => {
             <span className="text-xs text-slate-400">Degree #{index + 1}</span>
           </div>
 
+          <label className="sr-only" htmlFor={`education-${index}-school`}>School or university</label>
           <input
+            id={`education-${index}-school`}
             type="text"
             name="school"
             value={education.school}
@@ -76,7 +78,9 @@ const EducationForm = ({ data, setData }) => {
           />
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <label className="sr-only" htmlFor={`education-${index}-degree`}>Degree</label>
             <select
+              id={`education-${index}-degree`}
               name="degree"
               value={education.degree}
               onChange={(e) => handleChange(index, e)}
@@ -89,7 +93,9 @@ const EducationForm = ({ data, setData }) => {
               <option value="PhD">PhD</option>
             </select>
 
+            <label className="sr-only" htmlFor={`education-${index}-field`}>Field of study</label>
             <input
+              id={`education-${index}-field`}
               type="text"
               name="field"
               value={education.field}
@@ -100,7 +106,9 @@ const EducationForm = ({ data, setData }) => {
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <label className="sr-only" htmlFor={`education-${index}-start`}>Start date</label>
             <input
+              id={`education-${index}-start`}
               type="date"
               name="start"
               value={education.start}
@@ -108,7 +116,9 @@ const EducationForm = ({ data, setData }) => {
               className={inputClass}
             />
 
+            <label className="sr-only" htmlFor={`education-${index}-end`}>End date</label>
             <input
+              id={`education-${index}-end`}
               type="date"
               name="end"
               value={education.end}
@@ -117,7 +127,9 @@ const EducationForm = ({ data, setData }) => {
             />
           </div>
 
+          <label className="sr-only" htmlFor={`education-${index}-gpa`}>GPA or CGPA</label>
           <input
+            id={`education-${index}-gpa`}
             type="text"
             name="gpa"
             value={education.gpa}

@@ -145,11 +145,12 @@ const AnalysisResults = ({ data }) => {
         </div>
       </section>
 
-      <div className="liquid-segmented flex overflow-x-auto rounded-2xl p-1">
+      <div className="liquid-segmented flex overflow-x-auto rounded-2xl p-1" role="group" aria-label="Analysis sections">
         {tabs.map((tab) => (
           <button
             key={tab.value}
             type="button"
+            aria-pressed={activeTab === tab.value}
             onClick={() => setActiveTab(tab.value)}
             className={`rounded-md px-4 py-2 text-sm font-medium transition ${
               activeTab === tab.value

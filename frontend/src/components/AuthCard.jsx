@@ -88,7 +88,7 @@ const AuthCard = () => {
   };
 
   return (
-    <div className="liquid-glass-strong w-full max-w-md rounded-3xl p-8">
+    <div className="ats-auth-card liquid-glass-strong w-full max-w-md rounded-3xl p-8">
       <div className="mb-7">
         <div className="liquid-pill mb-5 flex h-11 w-11 items-center justify-center rounded-2xl text-slate-700">
           <Shield size={20} />
@@ -107,7 +107,7 @@ const AuthCard = () => {
       </div>
 
       {error && (
-        <div className="mb-4 flex items-start gap-2 rounded-xl border border-red-200/70 bg-red-50/70 px-3 py-2 text-sm text-red-700 backdrop-blur-xl">
+        <div id="auth-form-error" role="alert" aria-live="polite" className="mb-4 flex items-start gap-2 rounded-xl border border-red-200/70 bg-red-50/70 px-3 py-2 text-sm text-red-700 backdrop-blur-xl">
           <AlertCircle size={16} className="mt-0.5 shrink-0" />
           <p>{error}</p>
         </div>
@@ -116,22 +116,27 @@ const AuthCard = () => {
       <form className="space-y-4" onSubmit={handleSubmit}>
         {!isLogin && (
           <div>
-            <label className={labelClass}>Full Name</label>
+            <label className={labelClass} htmlFor="auth-name">Full Name</label>
             <input
+              id="auth-name"
               name="name"
               type="text"
               placeholder="Enter your full name"
               className={inputClass}
               onChange={handleChange}
               value={form.name}
+              autoComplete="name"
+              required
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? "auth-form-error" : undefined}
             />
           </div>
         )}
 
         {!isLogin && (
           <div>
-            <label className={labelClass}>How do you want to use ATSmind?</label>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <p id="account-type-label" className={labelClass}>How do you want to use ATSmind?</p>
+            <div className="grid gap-3 sm:grid-cols-2" role="group" aria-labelledby="account-type-label">
               {[
                 {
                   value: "job_seeker",
@@ -153,12 +158,9 @@ const AuthCard = () => {
                   <button
                     key={option.value}
                     type="button"
+                    aria-pressed={active}
                     onClick={() => setForm({ ...form, role: option.value })}
-                    className={`rounded-2xl border p-3 text-left transition ${
-                      active
-                        ? "border-teal-300 bg-teal-50/70 text-slate-950"
-                        : "border-white/70 bg-white/35 text-slate-600 hover:bg-white/55"
-                    }`}
+                    className={`ats-role-option${active ? " is-active" : ""}`}
                   >
                     <div className="flex items-center gap-2">
                       <Icon size={17} />
@@ -179,83 +181,110 @@ const AuthCard = () => {
         {!isLogin && form.role === "recruiter" && (
           <div className="grid gap-4">
             <div>
-              <label className={labelClass}>Company Name</label>
+              <label className={labelClass} htmlFor="auth-company-name">Company Name</label>
               <input
+                id="auth-company-name"
                 name="companyName"
                 type="text"
                 placeholder="Company name"
                 className={inputClass}
                 onChange={handleChange}
                 value={form.companyName}
+                autoComplete="organization"
+                aria-invalid={Boolean(error)}
+                aria-describedby={error ? "auth-form-error" : undefined}
               />
             </div>
 
             <div>
-              <label className={labelClass}>Designation</label>
+              <label className={labelClass} htmlFor="auth-designation">Designation</label>
               <input
+                id="auth-designation"
                 name="designation"
                 type="text"
                 placeholder="Talent partner"
                 className={inputClass}
                 onChange={handleChange}
                 value={form.designation}
+                autoComplete="organization-title"
+                aria-invalid={Boolean(error)}
+                aria-describedby={error ? "auth-form-error" : undefined}
               />
             </div>
 
             <div>
-              <label className={labelClass}>Company Website</label>
+              <label className={labelClass} htmlFor="auth-company-website">Company Website</label>
               <input
+                id="auth-company-website"
                 name="companyWebsite"
                 type="url"
                 placeholder="https://company.com"
                 className={inputClass}
                 onChange={handleChange}
                 value={form.companyWebsite}
+                autoComplete="url"
+                aria-invalid={Boolean(error)}
+                aria-describedby={error ? "auth-form-error" : undefined}
               />
             </div>
           </div>
         )}
 
         <div>
-          <label className={labelClass}>Email Address</label>
+          <label className={labelClass} htmlFor="auth-email">Email Address</label>
           <div className="relative">
             <Mail
               size={16}
               className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
             />
             <input
+              id="auth-email"
               name="email"
               type="email"
               placeholder="you@company.com"
               className={`${inputClass} pl-9`}
               onChange={handleChange}
               value={form.email}
+              autoComplete="email"
+              required
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? "auth-form-error" : undefined}
             />
           </div>
         </div>
 
         <div>
-          <label className={labelClass}>Password</label>
+          <label className={labelClass} htmlFor="auth-password">Password</label>
           <input
+            id="auth-password"
             name="password"
             type="password"
             placeholder="Enter your password"
             className={inputClass}
             onChange={handleChange}
             value={form.password}
+            autoComplete={isLogin ? "current-password" : "new-password"}
+            required
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? "auth-form-error" : undefined}
           />
         </div>
 
         {!isLogin && (
           <div>
-            <label className={labelClass}>Confirm Password</label>
+            <label className={labelClass} htmlFor="auth-confirm-password">Confirm Password</label>
             <input
+              id="auth-confirm-password"
               name="confirmPassword"
               type="password"
               placeholder="Confirm your password"
               className={inputClass}
               onChange={handleChange}
               value={form.confirmPassword}
+              autoComplete="new-password"
+              required
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? "auth-form-error" : undefined}
             />
           </div>
         )}

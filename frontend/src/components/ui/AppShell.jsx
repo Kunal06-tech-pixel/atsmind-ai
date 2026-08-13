@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   BarChart3,
@@ -55,26 +55,35 @@ const getNavItems = (user) => {
 const NavList = ({ items, onNavigate }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const directlyMatchedItem = [...items]
+    .sort((left, right) => right.to.length - left.to.length)
+    .find(
+      (item) =>
+        location.pathname === item.to || location.pathname.startsWith(`${item.to}/`)
+    );
+
+  const fallbackActivePath = location.pathname.startsWith("/resume/")
+    ? "/dashboard"
+    : location.pathname.startsWith("/recruiter/evaluations/")
+      ? "/recruiter/rankings"
+      : null;
 
   return (
-    <div className="space-y-1">
+    <div className="ats-workspace-nav-list">
       {items.map((item) => {
         const Icon = item.icon;
-        const active = location.pathname === item.to;
+        const active = item.to === (directlyMatchedItem?.to || fallbackActivePath);
 
         return (
           <button
             key={item.to}
             type="button"
+            aria-current={active ? "page" : undefined}
             onClick={() => {
               navigate(item.to);
               onNavigate?.();
             }}
-            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
-              active
-                ? "liquid-button-primary text-white"
-                : "text-slate-600 hover:bg-white/35 hover:text-slate-950"
-            }`}
+            className={`ats-workspace-nav-item${active ? " is-active" : ""}`}
           >
             <Icon size={17} />
             {item.label}
@@ -95,19 +104,19 @@ const UserBlock = ({ user, onLogout }) => {
     .toUpperCase();
 
   return (
-    <div className="liquid-glass rounded-2xl p-2">
+    <div className="ats-workspace-user-block">
       <div className="flex items-center gap-3">
-        <div className="liquid-button-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold text-white">
+        <div className="ats-workspace-avatar">
           {initials || "A"}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-slate-950">{label}</p>
-          <p className="text-xs text-slate-500">Workspace</p>
+          <p className="ats-workspace-user-name">{label}</p>
+          <p className="ats-workspace-user-meta">Workspace</p>
         </div>
         <button
           type="button"
           onClick={onLogout}
-          className="rounded-lg p-2 text-slate-400 transition hover:bg-red-50/70 hover:text-red-600"
+          className="ats-workspace-logout"
           aria-label="Logout"
         >
           <LogOut size={16} />
@@ -121,6 +130,8 @@ const AppShell = ({ title, description, actions, children }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
+  const mobileDrawerRef = useRef(null);
+  const mobileTriggerRef = useRef(null);
   const navItems = getNavItems(user);
   const workspaceLabel =
     getUserRole(user) === USER_ROLES.recruiter
@@ -134,31 +145,74 @@ const AppShell = ({ title, description, actions, children }) => {
     navigate("/");
   };
 
+  const closeMobileNavigation = useCallback(() => {
+    setOpen(false);
+    window.requestAnimationFrame(() => {
+      mobileTriggerRef.current?.focus({ preventScroll: true });
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    mobileDrawerRef.current?.querySelector("button")?.focus({ preventScroll: true });
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        closeMobileNavigation();
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+
+      const focusable = [...mobileDrawerRef.current.querySelectorAll("button, a, input, select, textarea")]
+        .filter((element) => !element.disabled && element.tabIndex !== -1);
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [closeMobileNavigation, open]);
+
   return (
-    <div className="glass-theme theme-bg min-h-screen text-slate-950">
-      <aside className="liquid-glass-strong fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-white/60 px-4 py-5 xl:block">
+    <div className="glass-theme theme-bg ats-operating-shell min-h-screen text-slate-950">
+      <aside className="ats-workspace-sidebar">
         <button
           type="button"
           onClick={() => navigate("/")}
-          className="mb-7 flex items-center gap-3 rounded-xl px-2 text-left"
+          className="ats-workspace-brand"
         >
           <BrandMark className="h-9 w-9" compact />
           <span>
-            <span className="block text-sm font-bold tracking-tight text-slate-950">
+            <span className="ats-workspace-brand-name">
               ATSmind AI
             </span>
-            <span className="block text-xs text-slate-500">Resume intelligence</span>
+            <span className="ats-workspace-brand-meta">Resume intelligence</span>
           </span>
         </button>
 
         <NavList items={navItems} />
 
-        <div className="absolute bottom-5 left-4 right-4">
-          <div className="liquid-pill mb-3 rounded-2xl p-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-blue-700">
+        <div className="ats-workspace-sidebar-footer">
+          <div className="ats-workspace-context">
+            <p className="ats-workspace-context-label">
               {workspaceLabel}
             </p>
-            <p className="mt-1 text-sm leading-5 text-blue-950">
+            <p className="ats-workspace-context-copy">
               Evidence-based resume and recruitment evaluation.
             </p>
           </div>
@@ -167,33 +221,33 @@ const AppShell = ({ title, description, actions, children }) => {
       </aside>
 
       {open && (
-        <div className="fixed inset-0 z-50 xl:hidden">
+        <div className="ats-workspace-mobile-layer">
           <button
             type="button"
-            className="absolute inset-0 bg-slate-950/35 backdrop-blur-sm"
-            onClick={() => setOpen(false)}
+            className="ats-workspace-mobile-backdrop"
+            onClick={closeMobileNavigation}
             aria-label="Close navigation overlay"
           />
-          <div className="liquid-glass-strong relative flex h-full w-[min(20rem,88vw)] flex-col border-r border-white/60 p-4">
+          <div ref={mobileDrawerRef} className="ats-workspace-mobile-drawer" role="dialog" aria-modal="true" aria-label="Workspace navigation">
             <div className="mb-6 flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => navigate("/")}
-                className="flex items-center gap-3"
+                className="ats-workspace-mobile-brand"
               >
                 <BrandMark className="h-9 w-9" compact />
-                <span className="text-sm font-bold text-slate-950">ATSmind AI</span>
+                <span>ATSmind AI</span>
               </button>
               <button
                 type="button"
-                onClick={() => setOpen(false)}
-                className="liquid-pill rounded-xl p-2 text-slate-500"
+                onClick={closeMobileNavigation}
+                className="ats-workspace-mobile-close"
                 aria-label="Close navigation"
               >
                 <X size={18} />
               </button>
             </div>
-            <NavList items={navItems} onNavigate={() => setOpen(false)} />
+            <NavList items={navItems} onNavigate={closeMobileNavigation} />
             <div className="mt-auto">
               <UserBlock user={user} onLogout={handleLogout} />
             </div>
@@ -201,24 +255,25 @@ const AppShell = ({ title, description, actions, children }) => {
         </div>
       )}
 
-      <div className="xl:pl-72">
-        <header className="sticky top-0 z-30 border-b border-white/50 bg-white/38 shadow-sm shadow-teal-950/5 backdrop-blur-2xl">
-          <div className="flex min-h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      <div className="ats-workspace-canvas">
+        <header className="ats-workspace-command-bar">
+          <div className="ats-workspace-command-inner">
             <div className="flex min-w-0 items-center gap-3">
               <button
+                ref={mobileTriggerRef}
                 type="button"
                 onClick={() => setOpen(true)}
-                className="liquid-pill rounded-xl p-2 text-slate-600 xl:hidden"
+                className="ats-workspace-mobile-trigger"
                 aria-label="Open navigation"
               >
                 <Menu size={18} />
               </button>
               <div className="min-w-0">
-                <h1 className="truncate text-base font-semibold tracking-tight text-slate-950 sm:text-lg">
+                <h1 className="ats-workspace-title">
                   {title}
                 </h1>
                 {description && (
-                  <p className="hidden truncate text-sm text-slate-500 md:block">
+                  <p className="ats-workspace-description hidden md:block">
                     {description}
                   </p>
                 )}
@@ -228,7 +283,7 @@ const AppShell = ({ title, description, actions, children }) => {
           </div>
         </header>
 
-        <main className="px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+        <main className="ats-workspace-content">{children}</main>
       </div>
     </div>
   );

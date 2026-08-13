@@ -114,7 +114,7 @@ const JobDetails = () => {
       description="Review and update the recruiter evaluation target."
       actions={
         <div className="flex gap-2">
-          <SecondaryButton onClick={() => navigate("/recruiter/jobs")}>
+          <SecondaryButton onClick={() => navigate("/recruiter/jobs")} className="hidden sm:inline-flex">
             Back to jobs
           </SecondaryButton>
           <PrimaryButton
@@ -131,7 +131,7 @@ const JobDetails = () => {
     >
       <div className="mx-auto max-w-5xl space-y-5">
         {error && (
-          <section className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <section id="job-details-error" role="alert" aria-live="polite" className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             <AlertCircle size={17} className="mt-0.5 shrink-0" />
             <p>{error}</p>
           </section>
@@ -145,7 +145,7 @@ const JobDetails = () => {
             </div>
           </section>
         ) : (
-          <form onSubmit={handleSave} className="space-y-5">
+          <form onSubmit={handleSave} className="space-y-5" aria-describedby={error ? "job-details-error" : undefined}>
             <section className="liquid-glass-strong rounded-2xl p-5">
               <div className="mb-5 flex items-start gap-3">
                 <div className="liquid-pill flex h-10 w-10 items-center justify-center rounded-xl text-slate-600">
@@ -163,8 +163,9 @@ const JobDetails = () => {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label className={labelClass}>Job Title</label>
+                  <label className={labelClass} htmlFor="job-details-title">Job Title</label>
                   <input
+                    id="job-details-title"
                     name="title"
                     value={form.title}
                     onChange={handleChange}
@@ -173,8 +174,9 @@ const JobDetails = () => {
                 </div>
 
                 <div>
-                  <label className={labelClass}>Company Name</label>
+                  <label className={labelClass} htmlFor="job-details-company-name">Company Name</label>
                   <input
+                    id="job-details-company-name"
                     name="companyName"
                     value={form.companyName}
                     onChange={handleChange}
@@ -183,8 +185,9 @@ const JobDetails = () => {
                 </div>
 
                 <div>
-                  <label className={labelClass}>Department</label>
+                  <label className={labelClass} htmlFor="job-details-department">Department</label>
                   <input
+                    id="job-details-department"
                     name="department"
                     value={form.department}
                     onChange={handleChange}
@@ -193,8 +196,9 @@ const JobDetails = () => {
                 </div>
 
                 <div>
-                  <label className={labelClass}>Location</label>
+                  <label className={labelClass} htmlFor="job-details-location">Location</label>
                   <input
+                    id="job-details-location"
                     name="location"
                     value={form.location}
                     onChange={handleChange}
@@ -204,8 +208,9 @@ const JobDetails = () => {
               </div>
 
               <div className="mt-4">
-                <label className={labelClass}>Job Description</label>
+                <label className={labelClass} htmlFor="job-details-description">Job Description</label>
                 <textarea
+                  id="job-details-description"
                   name="jobDescription"
                   value={form.jobDescription}
                   onChange={handleChange}
@@ -221,8 +226,9 @@ const JobDetails = () => {
               </h2>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <div>
-                  <label className={labelClass}>Mandatory Skills</label>
+                  <label className={labelClass} htmlFor="job-details-mandatory-skills">Mandatory Skills</label>
                   <textarea
+                    id="job-details-mandatory-skills"
                     name="mandatorySkills"
                     value={form.mandatorySkills}
                     onChange={handleChange}
@@ -232,8 +238,9 @@ const JobDetails = () => {
                 </div>
 
                 <div>
-                  <label className={labelClass}>Preferred Skills</label>
+                  <label className={labelClass} htmlFor="job-details-preferred-skills">Preferred Skills</label>
                   <textarea
+                    id="job-details-preferred-skills"
                     name="preferredSkills"
                     value={form.preferredSkills}
                     onChange={handleChange}
@@ -243,8 +250,9 @@ const JobDetails = () => {
                 </div>
 
                 <div>
-                  <label className={labelClass}>Minimum Experience</label>
+                  <label className={labelClass} htmlFor="job-details-minimum-experience">Minimum Experience</label>
                   <input
+                    id="job-details-minimum-experience"
                     name="minimumExperience"
                     type="number"
                     min="0"
@@ -256,8 +264,9 @@ const JobDetails = () => {
                 </div>
 
                 <div>
-                  <label className={labelClass}>Minimum Qualification</label>
+                  <label className={labelClass} htmlFor="job-details-minimum-qualification">Minimum Qualification</label>
                   <input
+                    id="job-details-minimum-qualification"
                     name="minimumQualification"
                     value={form.minimumQualification}
                     onChange={handleChange}
@@ -266,8 +275,9 @@ const JobDetails = () => {
                 </div>
 
                 <div>
-                  <label className={labelClass}>Status</label>
+                  <label className={labelClass} htmlFor="job-details-status">Status</label>
                   <select
+                    id="job-details-status"
                     name="status"
                     value={form.status}
                     onChange={handleChange}

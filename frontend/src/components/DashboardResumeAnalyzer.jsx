@@ -16,6 +16,8 @@ import { inputClass, labelClass } from "../utils/uiClasses";
 import { useToast } from "./ui/useToast";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const preferredScrollBehavior = () =>
+  window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
 
 const waitForCompletedAnalysis = async (analysisId) => {
   let delay = 1200;
@@ -124,13 +126,13 @@ export default function DashboardResumeAnalyzer({ preloadedResult = null }) {
 
   useEffect(() => {
     if (loading && loaderRef.current) {
-      loaderRef.current.scrollIntoView({ behavior: "smooth" });
+      loaderRef.current.scrollIntoView({ behavior: preferredScrollBehavior() });
     }
   }, [loading]);
 
   useEffect(() => {
     if (!loading && analysisResult && resultRef.current) {
-      resultRef.current.scrollIntoView({ behavior: "smooth" });
+      resultRef.current.scrollIntoView({ behavior: preferredScrollBehavior() });
     }
   }, [analysisResult, loading]);
 
@@ -152,13 +154,14 @@ export default function DashboardResumeAnalyzer({ preloadedResult = null }) {
 
           <div className="space-y-4">
             <div>
-              <label className={labelClass}>Company Name</label>
+              <label className={labelClass} htmlFor="analysis-company-name">Company Name</label>
               <div className="relative">
                 <Building2
                   size={16}
                   className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
                 />
                 <input
+                  id="analysis-company-name"
                   value={companyName}
                   onChange={(event) => setCompanyName(event.target.value)}
                   className={`${inputClass} pl-9`}
@@ -168,13 +171,14 @@ export default function DashboardResumeAnalyzer({ preloadedResult = null }) {
             </div>
 
             <div>
-              <label className={labelClass}>Job Title</label>
+              <label className={labelClass} htmlFor="analysis-job-title">Job Title</label>
               <div className="relative">
                 <Briefcase
                   size={16}
                   className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
                 />
                 <input
+                  id="analysis-job-title"
                   value={jobTitle}
                   onChange={(event) => setJobTitle(event.target.value)}
                   className={`${inputClass} pl-9`}
@@ -184,13 +188,14 @@ export default function DashboardResumeAnalyzer({ preloadedResult = null }) {
             </div>
 
             <div>
-              <label className={labelClass}>Job Description</label>
+              <label className={labelClass} htmlFor="analysis-job-description">Job Description</label>
               <div className="relative">
                 <AlignLeft
                   size={16}
                   className="pointer-events-none absolute left-3 top-3.5 text-slate-400"
                 />
                 <textarea
+                  id="analysis-job-description"
                   rows={7}
                   value={jobDescription}
                   onChange={(event) => setJobDescription(event.target.value)}
@@ -221,6 +226,7 @@ export default function DashboardResumeAnalyzer({ preloadedResult = null }) {
           </div>
 
           <label
+            htmlFor="analysis-resume-file"
             onDragOver={(event) => {
               event.preventDefault();
               setDragging(true);
@@ -258,6 +264,7 @@ export default function DashboardResumeAnalyzer({ preloadedResult = null }) {
             )}
 
             <input
+              id="analysis-resume-file"
               type="file"
               accept=".pdf,application/pdf"
               onChange={handleFileChange}

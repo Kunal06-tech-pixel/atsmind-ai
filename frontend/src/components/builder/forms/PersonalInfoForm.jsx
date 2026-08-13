@@ -42,14 +42,16 @@ const PersonalInfoForm = ({ data, setData }) => {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {fields.map((field) => (
           <div key={field.name}>
-            <label className={labelClass}>{field.label}</label>
+            <label className={labelClass} htmlFor={`personal-${field.name}`}>{field.label}</label>
             <input
+              id={`personal-${field.name}`}
               type={field.type}
               name={field.name}
               value={personal[field.name] || ""}
               onChange={handleChange}
               placeholder={field.placeholder}
               className={inputClass}
+              required={field.name === "name" || field.name === "email"}
             />
           </div>
         ))}

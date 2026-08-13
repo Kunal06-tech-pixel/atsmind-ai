@@ -1,5 +1,5 @@
 export const inputClass =
-  "liquid-control w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-teal-300/70 focus:ring-4 focus:ring-teal-500/15 disabled:cursor-not-allowed disabled:bg-white/35";
+  "liquid-control w-full min-h-11 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed disabled:bg-white/35";
 
 export const labelClass = "mb-1.5 block text-sm font-medium text-slate-700";
 
