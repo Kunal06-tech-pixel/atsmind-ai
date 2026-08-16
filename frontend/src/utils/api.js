@@ -6,7 +6,7 @@ const defaultApiBaseUrl =
     ? "http://localhost:5000"
     : hostname.endsWith(".vercel.app")
       ? ""
-      : "https://atsmind-ai.onrender.com";
+      : "https://atsmind-ai-cg4w.onrender.com";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || defaultApiBaseUrl,

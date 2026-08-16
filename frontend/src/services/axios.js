@@ -20,7 +20,7 @@ const defaultApiBaseUrl = (() => {
     return "";
   }
 
-  return "https://atsmind-ai.onrender.com";
+  return "https://atsmind-ai-cg4w.onrender.com";
 })();
 
 const api = axios.create({
