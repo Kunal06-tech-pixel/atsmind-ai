@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { useReducedMotion } from "framer-motion";
 import api from "../services/axios";
 import { useAuth } from "../context/useAuth";
 import { useLocation } from "react-router-dom";
 import { PrimaryButton } from "./ui/Buttons";
 import { inputClass, labelClass } from "../utils/uiClasses";
 import { useToast } from "./ui/useToast";
+import { ATSMIND_WAVE_VIDEO_URL } from "../utils/visualAssets";
 import {
   AlertCircle,
   ArrowRight,
@@ -16,6 +18,7 @@ import {
 
 const AuthCard = () => {
   const location = useLocation();
+  const reduceMotion = useReducedMotion();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -89,6 +92,18 @@ const AuthCard = () => {
 
   return (
     <div className="ats-auth-card liquid-glass-strong w-full max-w-md rounded-3xl p-8">
+      <div className="ats-auth-card-media" aria-hidden="true">
+        <video
+          autoPlay={!reduceMotion}
+          loop={!reduceMotion}
+          muted
+          playsInline
+          preload="metadata"
+          src={ATSMIND_WAVE_VIDEO_URL}
+        />
+        <div className="ats-auth-card-media-scrim" />
+      </div>
+
       <div className="mb-7">
         <div className="liquid-pill mb-5 flex h-11 w-11 items-center justify-center rounded-2xl text-slate-700">
           <Shield size={20} />

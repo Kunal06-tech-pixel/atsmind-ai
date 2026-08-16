@@ -10,6 +10,7 @@ import { motion as Motion, useReducedMotion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   Archive,
+  BriefcaseBusiness,
   Check,
   ChevronRight,
   CircleAlert,
@@ -27,6 +28,7 @@ import {
   Sparkles,
   Star,
   Trash2,
+  UserRound,
 } from "lucide-react";
 import AppNav from "../components/AppNav";
 import { useAuth } from "../context/useAuth";
@@ -35,9 +37,7 @@ import {
   getUserRole,
   USER_ROLES,
 } from "../utils/roles";
-
-const VIDEO_URL =
-  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260508_064122_c4750c0e-7476-4b44-94a2-a85a65c63bf2.mp4";
+import { ATSMIND_WAVE_VIDEO_URL } from "../utils/visualAssets";
 
 const analysisRows = [
   {
@@ -221,16 +221,20 @@ function NoiseDefinitions() {
   );
 }
 
-function PrimaryButton({ children, onClick, full = false }) {
+function PrimaryButton({ children, onClick, full = false, hero = false }) {
   return (
     <button
       type="button"
-      className={`ats-primary-button${full ? " is-full" : ""}`}
+      className={`ats-primary-button${full ? " is-full" : ""}${hero ? " is-hero" : ""}`}
       onClick={onClick}
     >
-      <FileSearch size={16} strokeWidth={2} aria-hidden="true" />
-      <span>{children}</span>
-      <ChevronRight className="ats-button-chevron" size={15} aria-hidden="true" />
+      <span className="ats-button-icon" aria-hidden="true">
+        <FileSearch size={16} strokeWidth={2} />
+      </span>
+      <span className="ats-button-label">{children}</span>
+      <span className="ats-button-arrow" aria-hidden="true">
+        <ChevronRight className="ats-button-chevron" size={15} />
+      </span>
     </button>
   );
 }
@@ -537,6 +541,10 @@ function TrustPrinciples({ reduceMotion }) {
 
 function WorkspaceComparison({ onIntent, reduceMotion }) {
   const [workspaceMode, setWorkspaceMode] = useState("career");
+  const workspacePreview =
+    workspaceMode === "career"
+      ? "Strengthen one resume against a target role."
+      : "Compare consented candidates against explicit requirements.";
 
   return (
     <section className="c3-pricing-section" id="workspaces" aria-labelledby="workspace-title">
@@ -546,6 +554,46 @@ function WorkspaceComparison({ onIntent, reduceMotion }) {
           <span className="c3-watermark-line-2">Revitalized</span>
         </div>
         <h2 id="workspace-title" className="sr-only">Choose an ATSmind workspace</h2>
+      </div>
+
+      <div className="c3-workspace-picker">
+        <div className="c3-workspace-picker-copy">
+          <span>Workspace lens</span>
+          <strong aria-live="polite">{workspacePreview}</strong>
+        </div>
+
+        <div className={`c3-role-switch is-${workspaceMode}`} role="group" aria-label="Preview a workspace">
+          <span className="c3-role-switch-indicator" aria-hidden="true" />
+          <button
+            type="button"
+            className={workspaceMode === "career" ? "is-active" : ""}
+            aria-pressed={workspaceMode === "career"}
+            aria-controls="workspace-card-career"
+            onClick={() => setWorkspaceMode("career")}
+          >
+            <UserRound size={16} strokeWidth={1.9} aria-hidden="true" />
+            <span>
+              <strong>Career</strong>
+              <small>My resume</small>
+            </span>
+          </button>
+          <button
+            type="button"
+            className={workspaceMode === "recruit" ? "is-active" : ""}
+            aria-pressed={workspaceMode === "recruit"}
+            aria-controls="workspace-card-recruit"
+            onClick={() => setWorkspaceMode("recruit")}
+          >
+            <BriefcaseBusiness size={16} strokeWidth={1.9} aria-hidden="true" />
+            <span>
+              <strong>Recruit</strong>
+              <small>Candidates</small>
+            </span>
+          </button>
+          <span className="sr-only" aria-live="polite">
+            {workspaceMode === "career" ? "Career workspace selected" : "Recruit workspace selected"}
+          </span>
+        </div>
       </div>
 
       <div className="c3-grid">
@@ -584,30 +632,6 @@ function WorkspaceComparison({ onIntent, reduceMotion }) {
         })}
       </div>
 
-      <div className={`c3-role-switch is-${workspaceMode}`} role="group" aria-label="Preview a workspace">
-        <span className="c3-role-switch-indicator" aria-hidden="true" />
-        <button
-          type="button"
-          className={workspaceMode === "career" ? "is-active" : ""}
-          aria-pressed={workspaceMode === "career"}
-          aria-controls="workspace-card-career"
-          onClick={() => setWorkspaceMode("career")}
-        >
-          Career
-        </button>
-        <button
-          type="button"
-          className={workspaceMode === "recruit" ? "is-active" : ""}
-          aria-pressed={workspaceMode === "recruit"}
-          aria-controls="workspace-card-recruit"
-          onClick={() => setWorkspaceMode("recruit")}
-        >
-          Recruit
-        </button>
-        <span className="sr-only" aria-live="polite">
-          {workspaceMode === "career" ? "Career workspace selected" : "Recruit workspace selected"}
-        </span>
-      </div>
     </section>
   );
 }
@@ -690,7 +714,7 @@ export default function Landing() {
       <NoiseDefinitions />
 
       <div className="ats-background-video" aria-hidden="true">
-        <video autoPlay={!reduceMotion} loop={!reduceMotion} muted playsInline preload="metadata" src={VIDEO_URL} />
+        <video autoPlay={!reduceMotion} loop={!reduceMotion} muted playsInline preload="metadata" src={ATSMIND_WAVE_VIDEO_URL} />
         <div className="ats-video-scrim" />
       </div>
 
@@ -724,8 +748,11 @@ export default function Landing() {
             animate={{ opacity: 1, transform: "translateY(0)" }}
             transition={{ duration: reduceMotion ? 0.18 : 0.7, delay: reduceMotion ? 0 : 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
-            <PrimaryButton onClick={() => goToIntent("career")}>Analyze with ATSmind</PrimaryButton>
-            <span>Career / Recruit workspaces</span>
+            <PrimaryButton hero onClick={() => goToIntent("career")}>Analyze with ATSmind</PrimaryButton>
+            <span className="ats-hero-cta-meta">
+              <i aria-hidden="true" />
+              Choose Career or Recruit next
+            </span>
           </Motion.div>
         </section>
 

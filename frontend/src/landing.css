@@ -317,6 +317,87 @@ body {
   font-size: 0.75rem;
 }
 
+.ats-hero-cta .ats-primary-button.is-hero {
+  position: relative;
+  isolation: isolate;
+  min-height: 3.5rem;
+  overflow: hidden;
+  gap: 0.75rem;
+  padding: 0.375rem 0.4375rem 0.375rem 0.375rem;
+  border: 1px solid rgba(255, 255, 255, 0.84);
+  background: #f7fbfa;
+  box-shadow:
+    0 0.875rem 2.5rem rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 #fff;
+}
+
+.ats-hero-cta .ats-primary-button.is-hero::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 18%, rgba(164, 253, 240, 0.58) 48%, transparent 72%);
+  background-position: 160% 50%;
+  background-size: 210% 100%;
+  content: "";
+  transition: background-position 520ms var(--ats-ease-out);
+}
+
+.ats-hero-cta .ats-primary-button.is-hero::after {
+  position: absolute;
+  inset: auto 1.1rem 0;
+  height: 2px;
+  border-radius: 999px 999px 0 0;
+  background: linear-gradient(90deg, transparent, var(--ats-teal) 32%, var(--ats-ice) 68%, transparent);
+  content: "";
+  opacity: 0.78;
+}
+
+.ats-primary-button .ats-button-icon,
+.ats-primary-button .ats-button-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.ats-primary-button.is-hero .ats-button-icon {
+  width: 2.625rem;
+  height: 2.625rem;
+  border: 1px solid rgba(0, 102, 95, 0.15);
+  border-radius: 999px;
+  color: #004f48;
+  background: rgba(164, 253, 240, 0.72);
+}
+
+.ats-primary-button.is-hero .ats-button-label {
+  padding-inline: 0.125rem 0.25rem;
+  letter-spacing: -0.012em;
+}
+
+.ats-primary-button.is-hero .ats-button-arrow {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  color: #fff;
+  background: #07110f;
+}
+
+.ats-hero-cta .ats-hero-cta-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.01em;
+}
+
+.ats-hero-cta-meta i {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: var(--ats-mint);
+  box-shadow: 0 0 0 0.1875rem rgba(46, 215, 181, 0.12);
+}
+
 .ats-primary-button,
 .ats-secondary-button {
   display: inline-flex;
@@ -1062,7 +1143,7 @@ body {
   gap: 1.5rem;
   width: 100%;
   max-width: 68.75rem;
-  margin-block-start: 3.75rem;
+  margin-block-start: 1.5rem;
   transform: translateX(1.25rem);
 }
 
@@ -1207,19 +1288,57 @@ body {
     transform 0.3s var(--ats-ease-out);
 }
 
+.c3-workspace-picker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  width: min(68.75rem, calc(100% - 2.5rem));
+  margin: 2.25rem auto 0;
+  padding: 0.875rem 0.875rem 0.875rem 1.25rem;
+  border: 1px solid rgba(164, 253, 240, 0.18);
+  border-radius: 1rem;
+  background: rgba(4, 12, 14, 0.78);
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.c3-workspace-picker-copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.25rem;
+}
+
+.c3-workspace-picker-copy > span {
+  color: var(--ats-mint);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.c3-workspace-picker-copy > strong {
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .c3-role-switch {
   position: relative;
   display: flex;
   align-items: center;
-  align-self: flex-end;
-  width: 12rem;
-  min-height: 3rem;
-  margin-block-start: 2rem;
-  margin-inline-end: max(1.25rem, calc((100% - 68.75rem) / 2));
+  flex: 0 0 auto;
+  width: 21rem;
+  min-height: 4rem;
+  margin: 0;
   padding: 0.25rem;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.52);
+  background: rgba(0, 0, 0, 0.68);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
@@ -1228,21 +1347,47 @@ body {
   position: relative;
   z-index: 2;
   width: 50%;
-  min-height: 2.75rem;
-  padding: 0;
+  display: flex;
+  align-items: center;
+  min-height: 3.5rem;
+  gap: 0.625rem;
+  padding: 0.5rem 0.875rem;
   border: 0;
   border-radius: 999px;
   color: rgba(255, 255, 255, 0.52);
   background: transparent;
   font: inherit;
-  font-size: 0.78rem;
-  font-weight: 650;
+  text-align: left;
   cursor: pointer;
   transition: color 0.3s var(--ats-ease-out);
 }
 
+.c3-role-switch button > svg {
+  flex: 0 0 auto;
+}
+
+.c3-role-switch button > span {
+  display: grid;
+  gap: 0.0625rem;
+}
+
+.c3-role-switch button strong {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.c3-role-switch button small {
+  color: rgba(255, 255, 255, 0.38);
+  font-size: 0.64rem;
+  font-weight: 500;
+}
+
 .c3-role-switch button.is-active {
   color: #002e28;
+}
+
+.c3-role-switch button.is-active small {
+  color: rgba(0, 46, 40, 0.64);
 }
 
 .c3-role-switch-indicator {
@@ -1314,6 +1459,22 @@ body {
 
   .ats-primary-button:hover .ats-button-chevron {
     transform: translateX(1px);
+  }
+
+  .ats-primary-button.is-hero:hover {
+    background: #fff;
+    box-shadow:
+      0 1rem 2.75rem rgba(0, 0, 0, 0.36),
+      inset 0 1px 0 #fff;
+    transform: translateY(-2px);
+  }
+
+  .ats-primary-button.is-hero:hover::before {
+    background-position: -60% 50%;
+  }
+
+  .ats-primary-button.is-hero:hover .ats-button-chevron {
+    transform: translateX(2px);
   }
 
   .ats-secondary-button:hover {
@@ -1436,12 +1597,25 @@ body {
   }
 
   .c3-role-switch {
-    align-self: center;
-    margin-inline-end: 0;
+    width: min(21rem, 100%);
   }
 }
 
 @media (max-width: 54rem) {
+  .c3-workspace-picker {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 1rem;
+  }
+
+  .c3-workspace-picker-copy > strong {
+    white-space: normal;
+  }
+
+  .c3-role-switch {
+    width: 100%;
+  }
+
   .ats-app-frame {
     overflow-x: auto;
     scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
@@ -1557,5 +1731,9 @@ body {
   .ats-nav-start:hover,
   .ats-nav-menu-button:hover {
     transform: none;
+  }
+
+  .ats-primary-button.is-hero::before {
+    display: none;
   }
 }
